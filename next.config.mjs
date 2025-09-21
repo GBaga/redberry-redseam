@@ -1,7 +1,14 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
-    domains: [process.env.NEXT_PUBLIC_API_DOMAIN],
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "api.redseam.redberryinternship.ge",
+        port: "",
+        pathname: "/**",
+      },
+    ],
   },
 };
 

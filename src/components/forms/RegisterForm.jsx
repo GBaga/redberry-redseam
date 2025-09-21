@@ -384,7 +384,7 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { register } from "@/services/authService"; // import service
+import { register } from "@/services/api"; // import service
 
 const RegisterForm = () => {
   const [formData, setFormData] = useState({

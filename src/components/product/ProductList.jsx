@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback } from "react";
 import ProductFilters from "@/components/product/ProductFilters";
 import ProductCard from "@/components/product/ProductCard";
 import Pagination from "@/components/product/Pagination";
-import { fetchProducts } from "@/lib/api";
+import { fetchProducts } from "@/services/api";
 
 export default function ProductsList() {
   const [products, setProducts] = useState([]);

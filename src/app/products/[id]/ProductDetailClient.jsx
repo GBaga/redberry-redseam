@@ -56,6 +56,7 @@ export default function ProductDetailClient({ product, onAddToCart }) {
       brandLogo: product.brand?.image || null,
     });
 
+    // Reset quantity after adding
     setQuantity(1);
   }, [
     product,
@@ -172,7 +173,7 @@ export default function ProductDetailClient({ product, onAddToCart }) {
                 fill
                 className="object-cover rounded-[10px]"
                 priority
-                onLoadingComplete={() => setIsImageLoading(false)}
+                onLoad={() => setIsImageLoading(false)}
               />
             </div>
           </div>
