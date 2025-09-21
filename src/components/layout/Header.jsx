@@ -76,7 +76,7 @@ const Header = ({
   );
 
   return (
-    <header className="fixed top-0 left-0 right-0 w-full h-20 flex items-center justify-between px-6 md:px-12 lg:px-24 bg-white shadow-sm z-50">
+    <header className="fixed top-0 left-0 right-0 w-full h-20 flex items-center justify-between px-6 md:px-12 lg:px-24 bg-white z-50">
       <Link
         href="/"
         className="flex items-center gap-2 hover:opacity-80 transition-opacity focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 rounded-md p-1"

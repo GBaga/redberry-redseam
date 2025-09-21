@@ -1,5 +1,17 @@
-function page() {
-  return <div>product details</div>;
-}
+import ProductDetailClient from "./ProductDetailClient";
 
-export default page;
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
+
+export default async function ProductPage({ params }) {
+  const { id } = params;
+
+  try {
+    const res = await fetch(`${API_URL}/products/${id}`, { cache: "no-store" });
+    if (!res.ok) return <div className="p-10">Failed to load product</div>;
+
+    const product = await res.json();
+    return <ProductDetailClient product={product} />;
+  } catch (err) {
+    return <div className="p-10">Something went wrong</div>;
+  }
+}
