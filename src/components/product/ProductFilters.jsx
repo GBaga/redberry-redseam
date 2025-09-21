@@ -12,25 +12,83 @@ export default function ProductFilters({
 }) {
   const [showSortDropdown, setShowSortDropdown] = useState(false);
   const [showPriceFilter, setShowPriceFilter] = useState(false);
+  const [localMinPrice, setLocalMinPrice] = useState(minPrice);
+  const [localMaxPrice, setLocalMaxPrice] = useState(maxPrice);
+
   const filterButtonRef = useRef(null);
+  const sortButtonRef = useRef(null);
   const [filterPosition, setFilterPosition] = useState({ top: 0, left: 0 });
 
-  // Calculate position for price filter popup
+  // Update local state when props change
+  useEffect(() => {
+    setLocalMinPrice(minPrice);
+    setLocalMaxPrice(maxPrice);
+  }, [minPrice, maxPrice]);
+
   useEffect(() => {
     if (showPriceFilter && filterButtonRef.current) {
       const rect = filterButtonRef.current.getBoundingClientRect();
+      const viewportWidth = window.innerWidth;
+      const popupWidth = 320;
+
+      // Calculate position to keep popup in viewport
+      let left = rect.left;
+      if (left + popupWidth > viewportWidth) {
+        left = viewportWidth - popupWidth - 16; // 16px margin
+      }
+
       setFilterPosition({
-        top: rect.bottom + 8, // 8px gap below button
-        left: rect.left,
+        top: rect.bottom + 8,
+        left: Math.max(16, left), // Minimum 16px from left edge
       });
     }
   }, [showPriceFilter]);
 
   const sortOptions = [
     { value: "-created_at", label: "New products first" },
+    { value: "created_at", label: "Old products first" },
     { value: "price", label: "Price, low to high" },
     { value: "-price", label: "Price, high to low" },
   ];
+
+  const handleLocalPriceChange = (field, value) => {
+    if (field === "min") {
+      setLocalMinPrice(value);
+    } else {
+      setLocalMaxPrice(value);
+    }
+  };
+
+  const handleApplyFilters = () => {
+    // Validate price range locally first
+    if (
+      localMinPrice &&
+      localMaxPrice &&
+      Number(localMinPrice) > Number(localMaxPrice)
+    ) {
+      alert("Minimum price cannot be greater than maximum price");
+      return;
+    }
+
+    // Update parent component
+    onPriceChange("min", localMinPrice);
+    onPriceChange("max", localMaxPrice);
+    onApply();
+    setShowPriceFilter(false);
+  };
+
+  const handleSortSelect = (sortValue) => {
+    onSortChange(sortValue);
+    setShowSortDropdown(false);
+  };
+
+  const handleClearPriceFilters = () => {
+    setLocalMinPrice("");
+    setLocalMaxPrice("");
+    onPriceChange("min", "");
+    onPriceChange("max", "");
+    onApply();
+  };
 
   return (
     <div className="flex items-center gap-4 relative">
@@ -41,88 +99,86 @@ export default function ProductFilters({
           setShowPriceFilter(!showPriceFilter);
           setShowSortDropdown(false);
         }}
-        className="flex items-center gap-2 px-3 py-1 hover:opacity-70 transition-opacity"
+        className={`flex items-center gap-2 px-3 py-1 hover:opacity-70 transition-opacity ${
+          minPrice || maxPrice ? "text-[#FF4000] font-medium" : ""
+        }`}
+        aria-expanded={showPriceFilter}
+        aria-haspopup="true"
       >
         <svg
-          width="24"
-          height="24"
+          width="16"
+          height="16"
           viewBox="0 0 24 24"
           fill="none"
-          xmlns="http://www.w3.org/2000/svg"
+          stroke="currentColor"
+          strokeWidth="2"
         >
-          <path
-            d="M6 4.5H18M8.25 9H15.75M10.5 13.5H13.5"
-            stroke="#0F172A"
-            strokeWidth="1.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
+          <polygon points="22,3 2,3 10,12.46 10,19 14,21 14,12.46 22,3" />
         </svg>
-        <span className="text-[#10151F] font-['Poppins'] text-base">
-          Filter
-        </span>
+        Filter
       </button>
 
-      {/* Sort By Dropdown */}
+      {/* Sort Dropdown */}
       <div className="relative">
         <button
+          ref={sortButtonRef}
           onClick={() => {
             setShowSortDropdown(!showSortDropdown);
             setShowPriceFilter(false);
           }}
-          className="flex items-center gap-1 px-3 py-1 hover:opacity-70 transition-opacity"
+          className={`flex items-center gap-1 px-3 py-1 hover:opacity-70 transition-opacity ${
+            sort ? "text-[#FF4000] font-medium" : ""
+          }`}
+          aria-expanded={showSortDropdown}
+          aria-haspopup="true"
         >
-          <span className="text-[#10151F] font-['Poppins'] text-base">
-            Sort by
-          </span>
           <svg
-            width="20"
-            height="20"
-            viewBox="0 0 20 20"
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
             fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-            className={`transform transition-transform ${
+            stroke="currentColor"
+            strokeWidth="2"
+          >
+            <path d="M3 6h18M7 12h10m-7 6h4" />
+          </svg>
+          Sort by
+          <svg
+            width="12"
+            height="12"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            className={`transition-transform ${
               showSortDropdown ? "rotate-180" : ""
             }`}
           >
-            <path
-              fillRule="evenodd"
-              clipRule="evenodd"
-              d="M5.21967 7.21967C5.51256 6.92678 5.98744 6.92678 6.28033 7.21967L10 10.9393L13.7197 7.21967C14.0126 6.92678 14.4874 6.92678 14.7803 7.21967C15.0732 7.51256 15.0732 7.98744 14.7803 8.28033L10.5303 12.5303C10.2374 12.8232 9.76256 12.8232 9.46967 12.5303L5.21967 8.28033C4.92678 7.98744 4.92678 7.51256 5.21967 7.21967Z"
-              fill="#10151F"
-            />
+            <polyline points="6,9 12,15 18,9" />
           </svg>
         </button>
 
         {showSortDropdown && (
           <div className="absolute right-0 top-full mt-2 w-56 bg-white border border-[#E1DFE1] rounded-lg shadow-lg z-50 py-2">
-            <div className="px-4 py-2 border-b border-[#E1DFE1]">
-              <span className="text-[#10151F] font-['Poppins'] font-semibold text-base">
-                Sort by
-              </span>
-            </div>
-            <div className="py-1">
-              {sortOptions.map((option) => (
-                <button
-                  key={option.value}
-                  onClick={() => {
-                    onSortChange(option.value);
-                    setShowSortDropdown(false);
-                  }}
-                  className="w-full text-left px-4 py-2 hover:bg-gray-50 transition-colors"
-                >
-                  <span
-                    className={`font-['Poppins'] text-base ${
-                      sort === option.value
-                        ? "text-[#FF4000] font-medium"
-                        : "text-[#10151F] font-normal"
-                    }`}
-                  >
-                    {option.label}
-                  </span>
-                </button>
-              ))}
-            </div>
+            <button
+              onClick={() => handleSortSelect("")}
+              className={`w-full text-left px-4 py-2 hover:bg-gray-50 ${
+                !sort ? "text-[#FF4000] font-medium" : ""
+              }`}
+            >
+              Default
+            </button>
+            {sortOptions.map((option) => (
+              <button
+                key={option.value}
+                onClick={() => handleSortSelect(option.value)}
+                className={`w-full text-left px-4 py-2 hover:bg-gray-50 ${
+                  sort === option.value ? "text-[#FF4000] font-medium" : ""
+                }`}
+              >
+                {option.label}
+              </button>
+            ))}
           </div>
         )}
       </div>
@@ -135,47 +191,93 @@ export default function ProductFilters({
             top: `${filterPosition.top}px`,
             left: `${filterPosition.left}px`,
             width: "320px",
+            maxWidth: "calc(100vw - 32px)",
           }}
         >
-          <h3 className="text-[#10151F] font-['Poppins'] font-semibold text-base mb-4">
-            Select price
-          </h3>
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="font-semibold">Select price range</h3>
+            <button
+              onClick={() => setShowPriceFilter(false)}
+              className="text-gray-500 hover:text-gray-700"
+              aria-label="Close price filter"
+            >
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
+                <line x1="18" y1="6" x2="6" y2="18" />
+                <line x1="6" y1="6" x2="18" y2="18" />
+              </svg>
+            </button>
+          </div>
 
           <div className="flex gap-3 mb-4">
             <div className="flex-1">
-              <label className="text-xs text-gray-600 font-['Poppins'] mb-1 block">
-                From
+              <label
+                htmlFor="minPrice"
+                className="block text-sm text-gray-600 mb-1"
+              >
+                Min Price
               </label>
-              <input
-                type="number"
-                placeholder="Min"
-                value={minPrice}
-                onChange={(e) => onPriceChange("min", e.target.value)}
-                className="w-full px-3 py-2 border border-[#E1DFE1] rounded-lg outline-none focus:border-[#FF4000] font-['Poppins'] text-sm"
-              />
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">
+                  $
+                </span>
+                <input
+                  id="minPrice"
+                  type="number"
+                  placeholder="0"
+                  value={localMinPrice}
+                  onChange={(e) =>
+                    handleLocalPriceChange("min", e.target.value)
+                  }
+                  className="w-full pl-7 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#FF4000] focus:border-transparent"
+                  min="0"
+                  step="0.01"
+                />
+              </div>
             </div>
-
             <div className="flex-1">
-              <label className="text-xs text-gray-600 font-['Poppins'] mb-1 block">
-                To
+              <label
+                htmlFor="maxPrice"
+                className="block text-sm text-gray-600 mb-1"
+              >
+                Max Price
               </label>
-              <input
-                type="number"
-                placeholder="Max"
-                value={maxPrice}
-                onChange={(e) => onPriceChange("max", e.target.value)}
-                className="w-full px-3 py-2 border border-[#E1DFE1] rounded-lg outline-none focus:border-[#FF4000] font-['Poppins'] text-sm"
-              />
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">
+                  $
+                </span>
+                <input
+                  id="maxPrice"
+                  type="number"
+                  placeholder="1000"
+                  value={localMaxPrice}
+                  onChange={(e) =>
+                    handleLocalPriceChange("max", e.target.value)
+                  }
+                  className="w-full pl-7 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#FF4000] focus:border-transparent"
+                  min="0"
+                  step="0.01"
+                />
+              </div>
             </div>
           </div>
 
-          <div className="flex justify-end">
+          <div className="flex justify-between gap-3">
             <button
-              onClick={() => {
-                onApply();
-                setShowPriceFilter(false);
-              }}
-              className="px-6 py-2 bg-[#FF4000] text-white rounded-[10px] hover:bg-[#E63900] transition-colors font-['Poppins'] text-sm"
+              onClick={handleClearPriceFilters}
+              className="px-4 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+            >
+              Clear
+            </button>
+            <button
+              onClick={handleApplyFilters}
+              className="px-6 py-2 bg-[#FF4000] text-white rounded-lg hover:bg-[#E63900] transition-colors"
             >
               Apply
             </button>

@@ -6,39 +6,46 @@ export default function Pagination({ currentPage, totalPages, onPageChange }) {
   if (totalPages <= 1) return null;
 
   const handlePageChange = (page) => {
-    if (page < 1 || page > totalPages) return;
+    if (page < 1 || page > totalPages || page === currentPage) return;
     onPageChange(page);
   };
 
   const pageNumbers = useMemo(() => {
-    const pages = [];
+    const delta = 2; // Number of pages to show on each side of current page
+    const range = [];
+    const rangeWithDots = [];
 
-    if (totalPages <= 5) {
-      // Show all pages
-      for (let i = 1; i <= totalPages; i++) {
-        pages.push(i);
-      }
-    } else {
-      // Always show first 2, last 2, and current/adjacent
-      const left = Math.max(currentPage - 1, 3);
-      const right = Math.min(currentPage + 1, totalPages - 2);
-
-      pages.push(1);
-      pages.push(2);
-
-      if (left > 3) pages.push("...");
-
-      for (let i = left; i <= right; i++) {
-        pages.push(i);
-      }
-
-      if (right < totalPages - 2) pages.push("...");
-
-      pages.push(totalPages - 1);
-      pages.push(totalPages);
+    // Calculate the range of pages to show
+    for (
+      let i = Math.max(2, currentPage - delta);
+      i <= Math.min(totalPages - 1, currentPage + delta);
+      i++
+    ) {
+      range.push(i);
     }
 
-    return pages;
+    // Always show first page
+    if (currentPage - delta > 2) {
+      rangeWithDots.push(1, "...");
+    } else {
+      rangeWithDots.push(1);
+    }
+
+    // Add the calculated range (skip first page if already added)
+    range.forEach((page) => {
+      if (page !== 1) {
+        rangeWithDots.push(page);
+      }
+    });
+
+    // Always show last page
+    if (currentPage + delta < totalPages - 1) {
+      rangeWithDots.push("...", totalPages);
+    } else if (totalPages > 1 && !rangeWithDots.includes(totalPages)) {
+      rangeWithDots.push(totalPages);
+    }
+
+    return rangeWithDots;
   }, [currentPage, totalPages]);
 
   return (
