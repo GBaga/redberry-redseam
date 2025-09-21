@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useMemo } from "react";
 import Image from "next/image";
+import { addToCart as addToCartAPI } from "@/services/api";
 
 export default function ProductDetailClient({ product, onAddToCart }) {
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
@@ -41,29 +42,47 @@ export default function ProductDetailClient({ product, onAddToCart }) {
     [product]
   );
 
-  const handleAddToCart = useCallback(() => {
-    if (!onAddToCart || !product) return;
+  const handleAddToCart = useCallback(async () => {
+    if (!product) return;
 
-    onAddToCart({
-      id: product.id,
-      name: product.name,
-      price: product.price,
-      image: selectedImage,
-      color: selectedColor,
-      size: selectedSize,
-      quantity,
-      brand: product.brand?.name || "Unknown",
-      brandLogo: product.brand?.image || null,
-    });
+    try {
+      // Call the backend API
+      await addToCartAPI(product.id, {
+        quantity,
+        color: selectedColor,
+        size: selectedSize,
+      });
 
-    // Reset quantity after adding
-    setQuantity(1);
+      // Optionally update local cart state
+      if (onAddToCart) {
+        onAddToCart({
+          id: product.id,
+          name: product.name,
+          price: product.price,
+          image: selectedImage,
+          color: selectedColor,
+          size: selectedSize,
+          quantity,
+          brand: product.brand?.name || "Unknown",
+          brandLogo: product.brand?.image || null,
+        });
+      }
+
+      // Reset quantity
+      setQuantity(1);
+
+      alert("Product added to cart!");
+      window.location.reload(); // Refresh the page
+    } catch (err) {
+      console.error(err);
+      alert("Failed to add product to cart.");
+    }
   }, [
     product,
-    selectedImage,
+    quantity,
     selectedColor,
     selectedSize,
-    quantity,
+    selectedImage,
     onAddToCart,
   ]);
 
