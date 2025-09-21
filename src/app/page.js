@@ -1,3 +1,7 @@
+// app/page.js
+"use client";
+import ProductList from "@/components/product/ProductList";
+
 export default function Home() {
-  return <h1>Redberry</h1>;
+  return <ProductList />;
 }
