@@ -214,3 +214,20 @@ export async function checkout() {
 
   return handleResponse(response);
 }
+
+export async function checkoutWithDetails(checkoutData) {
+  const token = getAuthToken();
+  if (!token) throw new Error("Authentication required");
+
+  const response = await fetch(`${API_URL}/cart/checkout`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+      Authorization: token,
+    },
+    body: JSON.stringify(checkoutData),
+  });
+
+  return handleResponse(response);
+}

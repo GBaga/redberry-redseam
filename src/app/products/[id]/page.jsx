@@ -17,7 +17,7 @@
 // }
 
 // app/products/[id]/page.js
-import ProductDetailClient from "./ProductDetailClient";
+import ProductDetailClient from "@/components/ProductDetailClient";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 

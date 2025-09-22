@@ -242,7 +242,7 @@ const Header = ({
         <div className="flex items-center gap-3">
           <Link
             href="/login"
-            className="w-10 h-10 rounded-full hover:bg-gray-200 transition-colors flex items-center justify-center"
+            className="w-10 h-10 rounded-full hover:bg-gray-200 transition-colors flex items-center justify-center cursor-pointer"
             aria-label="User profile menu"
           >
             <UserProfileIcon />
@@ -255,7 +255,7 @@ const Header = ({
         <div className="flex items-center gap-5">
           <button
             onClick={onCartClick}
-            className="relative hover:opacity-80 transition-opacity rounded-md p-1"
+            className="relative hover:opacity-80 transition-opacity rounded-md p-1 cursor-pointer"
             aria-label={`Shopping cart${
               cartItemCount > 0 ? ` with ${cartItemCount} items` : ""
             }`}

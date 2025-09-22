@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import Image from "next/image";
 import { addToCart as addToCartAPI } from "@/services/api";
+import { toast, Bounce } from "react-toastify";
 
 export default function ProductDetailClient({ product, onAddToCart }) {
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
@@ -53,7 +54,7 @@ export default function ProductDetailClient({ product, onAddToCart }) {
         size: selectedSize,
       });
 
-      // Optionally update local cart state
+      // Update local cart state if provided
       if (onAddToCart) {
         onAddToCart({
           id: product.id,
@@ -71,11 +72,28 @@ export default function ProductDetailClient({ product, onAddToCart }) {
       // Reset quantity
       setQuantity(1);
 
-      alert("Product added to cart!");
-      window.location.reload(); // Refresh the page
+      // Show toast
+      toast.success("Product added to cart!", {
+        position: "top-center",
+        autoClose: 500,
+        hideProgressBar: false,
+        closeOnClick: false,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "light",
+        transition: Bounce,
+      });
+
+      // Reload after toast disappears
+      setTimeout(() => {
+        window.location.reload();
+      }, 2000);
     } catch (err) {
       console.error(err);
-      alert("Failed to add product to cart.");
+      toast.error("Failed to add product to cart.", {
+        position: "top-center",
+      });
     }
   }, [
     product,
@@ -88,10 +106,12 @@ export default function ProductDetailClient({ product, onAddToCart }) {
 
   useEffect(() => {
     const handleKeyPress = (e) => {
+      // Add null checks for product.images
       if (e.key === "ArrowLeft" && selectedImageIndex > 0) {
         handleImageSelect(selectedImageIndex - 1);
       } else if (
         e.key === "ArrowRight" &&
+        product?.images?.length &&
         selectedImageIndex < product.images.length - 1
       ) {
         handleImageSelect(selectedImageIndex + 1);
@@ -130,7 +150,7 @@ export default function ProductDetailClient({ product, onAddToCart }) {
           {/* Thumbnails */}
           <div className="hidden lg:block lg:col-span-1">
             <div className="sticky top-4 space-y-2">
-              {product.images.map((img, index) => (
+              {product?.images?.map((img, index) => (
                 <button
                   key={`thumb-${index}`}
                   onClick={() => handleImageSelect(index)}
@@ -158,7 +178,7 @@ export default function ProductDetailClient({ product, onAddToCart }) {
           <div className="lg:col-span-6">
             {/* Mobile Thumbnails */}
             <div className="flex gap-2 mb-4 overflow-x-auto pb-2 lg:hidden">
-              {product.images.map((img, index) => (
+              {product?.images?.map((img, index) => (
                 <button
                   key={`mobile-thumb-${index}`}
                   onClick={() => handleImageSelect(index)}
@@ -207,56 +227,60 @@ export default function ProductDetailClient({ product, onAddToCart }) {
             </p>
 
             {/* Color Selection */}
-            <div className="space-y-3">
-              <p className="text-base font-medium text-[#10151F]">
-                Color: <span className="font-normal">{selectedColor}</span>
-              </p>
-              <div className="flex flex-wrap gap-3">
-                {product.available_colors.map((color, index) => (
-                  <button
-                    key={color}
-                    onClick={() => handleColorSelect(color, index)}
-                    className={`relative w-10 h-10 rounded-full border-2 transition-transform duration-200 ${
-                      selectedColor === color
-                        ? "border-[#FF4000] shadow-lg scale-110"
-                        : "border-[#E1DFE1]"
-                    }`}
-                    style={{
-                      backgroundColor:
-                        color.toLowerCase() === "white"
-                          ? "#ffffff"
-                          : color.toLowerCase() === "multi"
-                          ? "linear-gradient(45deg, #ff0000, #00ff00, #0000ff)"
-                          : color.toLowerCase(),
-                    }}
-                  />
-                ))}
+            {product?.available_colors?.length > 0 && (
+              <div className="space-y-3">
+                <p className="text-base font-medium text-[#10151F]">
+                  Color: <span className="font-normal">{selectedColor}</span>
+                </p>
+                <div className="flex flex-wrap gap-3">
+                  {product.available_colors.map((color, index) => (
+                    <button
+                      key={color}
+                      onClick={() => handleColorSelect(color, index)}
+                      className={`relative w-10 h-10 rounded-full border-2 transition-transform duration-200 ${
+                        selectedColor === color
+                          ? "border-[#FF4000] shadow-lg scale-110"
+                          : "border-[#E1DFE1]"
+                      }`}
+                      style={{
+                        backgroundColor:
+                          color.toLowerCase() === "white"
+                            ? "#ffffff"
+                            : color.toLowerCase() === "multi"
+                            ? "linear-gradient(45deg, #ff0000, #00ff00, #0000ff)"
+                            : color.toLowerCase(),
+                      }}
+                    />
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
 
             {/* Size Selection */}
-            <div className="space-y-3">
-              <p className="text-base font-medium text-[#10151F]">
-                Size: <span className="font-normal">{selectedSize}</span>
-              </p>
-              <div className="flex flex-wrap gap-2">
-                {product.available_sizes.map((size, i) => (
-                  <button
-                    key={size}
-                    onClick={() => setSelectedSize(size)}
-                    className={`w-[70px] h-[42px] flex justify-center items-center rounded-lg border ${
-                      selectedSize === size
-                        ? "bg-[#F8F6F7] border-[#10151F]"
-                        : "border-[#E1DFE1]"
-                    }`}
-                  >
-                    <span className="text-[#10151F] text-[16px] font-normal opacity-80">
-                      {size}
-                    </span>
-                  </button>
-                ))}
+            {product?.available_sizes?.length > 0 && (
+              <div className="space-y-3">
+                <p className="text-base font-medium text-[#10151F]">
+                  Size: <span className="font-normal">{selectedSize}</span>
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {product.available_sizes.map((size, i) => (
+                    <button
+                      key={size}
+                      onClick={() => setSelectedSize(size)}
+                      className={`w-[70px] h-[42px] flex justify-center items-center rounded-lg border ${
+                        selectedSize === size
+                          ? "bg-[#F8F6F7] border-[#10151F]"
+                          : "border-[#E1DFE1]"
+                      }`}
+                    >
+                      <span className="text-[#10151F] text-[16px] font-normal opacity-80">
+                        {size}
+                      </span>
+                    </button>
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
 
             {/* Quantity */}
             <div className="relative w-[70px]">
