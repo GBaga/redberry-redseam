@@ -511,7 +511,7 @@ export default function MainLayout({ children }) {
   const handleProfileClick = useCallback(() => {
     const token = localStorage.getItem("token");
     if (!token) window.location.href = "/login";
-    else window.location.href = "/profile";
+    else window.location.href = "/checkout";
   }, []);
 
   const cartItemCount = cartItems.reduce(

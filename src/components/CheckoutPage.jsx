@@ -582,7 +582,7 @@ const CheckoutPage = () => {
                             type="button"
                             onClick={() => updateQuantity(item.id, -1)}
                             disabled={item.quantity <= 1 || isLoading}
-                            className="w-[16px] h-[16px] flex items-center justify-center disabled:opacity-50"
+                            className="w-[16px] h-[16px] flex items-center justify-center disabled:opacity-50 cursor-pointer"
                           >
                             <MinusIcon />
                           </button>
@@ -593,7 +593,7 @@ const CheckoutPage = () => {
                             type="button"
                             onClick={() => updateQuantity(item.id, 1)}
                             disabled={isLoading}
-                            className="w-[16px] h-[16px] flex items-center justify-center"
+                            className="w-[16px] h-[16px] flex items-center justify-center cursor-pointer"
                           >
                             <PlusIcon />
                           </button>
@@ -604,7 +604,7 @@ const CheckoutPage = () => {
                           type="button"
                           onClick={() => removeItem(item.id)}
                           disabled={isLoading}
-                          className="text-[12px] font-normal text-[#3E424A] leading-[18px] opacity-80 hover:opacity-100 disabled:opacity-50 w-[49px] text-right"
+                          className="text-[12px] font-normal text-[#3E424A] leading-[18px] opacity-80 hover:opacity-100 disabled:opacity-50 w-[49px] text-right cursor-pointer"
                         >
                           Remove
                         </button>
@@ -648,17 +648,17 @@ const CheckoutPage = () => {
                   </div>
                 </div>
 
-                {/* Checkout Button */}
+                {/* Pay Button */}
                 <button
                   type="button"
                   onClick={handleCheckout}
                   disabled={isLoading || cartItems.length === 0}
-                  className="w-full h-[59px] bg-[#FF4000] hover:bg-[#E63600] disabled:bg-gray-300 text-white font-medium text-[18px] leading-[27px] py-[16px] px-[60px] rounded-[10px] transition-colors flex items-center justify-center gap-[10px]"
+                  className="w-full h-[59px] bg-[#FF4000] hover:bg-[#E63600] disabled:bg-gray-300 text-white font-medium text-[18px] leading-[27px] py-[16px] px-[60px] rounded-[10px] transition-colors flex items-center justify-center gap-[10px] cursor-pointer"
                 >
                   {isLoading ? (
                     <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
                   ) : (
-                    "Checkout"
+                    "Pay"
                   )}
                 </button>
               </div>
