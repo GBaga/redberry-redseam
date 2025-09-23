@@ -164,7 +164,7 @@ export default function ProductsList() {
                 : sort}
               <button
                 onClick={() => handleRemoveFilter("sort")}
-                className="ml-2 font-bold hover:text-red-600"
+                className="ml-2 font-bold hover:text-red-600 cursor-pointer"
                 aria-label="Remove sort filter"
               >
                 ×
@@ -176,7 +176,7 @@ export default function ProductsList() {
               Min: ${minPrice}
               <button
                 onClick={() => handleRemoveFilter("minPrice")}
-                className="ml-2 font-bold hover:text-red-600"
+                className="ml-2 font-bold hover:text-red-600 cursor-pointer"
                 aria-label="Remove minimum price filter"
               >
                 ×
@@ -188,7 +188,7 @@ export default function ProductsList() {
               Max: ${maxPrice}
               <button
                 onClick={() => handleRemoveFilter("maxPrice")}
-                className="ml-2 font-bold hover:text-red-600"
+                className="ml-2 font-bold hover:text-red-600 cursor-pointer"
                 aria-label="Remove maximum price filter"
               >
                 ×
@@ -197,7 +197,7 @@ export default function ProductsList() {
           )}
           <button
             onClick={handleClearFilters}
-            className="ml-2 px-3 py-1 bg-[#FF4000] text-white rounded-full text-sm hover:bg-[#E63900] transition-colors"
+            className="ml-2 px-3 py-1 bg-[#FF4000] text-white rounded-full text-sm hover:bg-[#E63900] transition-colors cursor-pointer"
           >
             Clear All
           </button>
@@ -223,7 +223,7 @@ export default function ProductsList() {
             <span className="font-['Poppins']">{error}</span>
             <button
               onClick={() => setError(null)}
-              className="ml-auto text-red-500 hover:text-red-700"
+              className="ml-auto text-red-500 hover:text-red-700 cursor-pointer"
               aria-label="Dismiss error"
             >
               ×
@@ -273,7 +273,7 @@ export default function ProductsList() {
           {(minPrice || maxPrice || sort) && (
             <button
               onClick={handleClearFilters}
-              className="mt-4 px-6 py-2 bg-[#FF4000] text-white rounded-lg hover:bg-[#E63900] transition-colors"
+              className="mt-4 px-6 py-2 bg-[#FF4000] text-white rounded-lg hover:bg-[#E63900] transition-colors cursor-pointer"
             >
               Clear Filters
             </button>

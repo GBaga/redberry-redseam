@@ -154,7 +154,7 @@ export default function ProductDetailClient({ product, onAddToCart }) {
                 <button
                   key={`thumb-${index}`}
                   onClick={() => handleImageSelect(index)}
-                  className={`w-full aspect-[3/4] overflow-hidden rounded-md border-2 transition-all duration-200 ${
+                  className={`w-full aspect-[3/4] overflow-hidden rounded-md border-2 transition-all duration-200 cursor-pointer ${
                     selectedImageIndex === index
                       ? "border-[#FF4000] shadow-lg"
                       : "border-[#E1DFE1] hover:border-gray-300"
@@ -182,7 +182,7 @@ export default function ProductDetailClient({ product, onAddToCart }) {
                 <button
                   key={`mobile-thumb-${index}`}
                   onClick={() => handleImageSelect(index)}
-                  className={`flex-shrink-0 w-20 h-24 overflow-hidden rounded-md border-2 transition-all duration-200 ${
+                  className={`flex-shrink-0 w-20 h-24 overflow-hidden rounded-md border-2 transition-all duration-200 cursor-pointer ${
                     selectedImageIndex === index
                       ? "border-[#FF4000] shadow-md"
                       : "border-[#E1DFE1]"
@@ -237,7 +237,7 @@ export default function ProductDetailClient({ product, onAddToCart }) {
                     <button
                       key={color}
                       onClick={() => handleColorSelect(color, index)}
-                      className={`relative w-10 h-10 rounded-full border-2 transition-transform duration-200 ${
+                      className={`relative w-10 h-10 rounded-full border-2 transition-transform duration-200 cursor-pointer ${
                         selectedColor === color
                           ? "border-[#FF4000] shadow-lg scale-110"
                           : "border-[#E1DFE1]"
@@ -267,7 +267,7 @@ export default function ProductDetailClient({ product, onAddToCart }) {
                     <button
                       key={size}
                       onClick={() => setSelectedSize(size)}
-                      className={`w-[70px] h-[42px] flex justify-center items-center rounded-lg border ${
+                      className={`w-[70px] h-[42px] flex justify-center items-center rounded-lg border cursor-pointer ${
                         selectedSize === size
                           ? "bg-[#F8F6F7] border-[#10151F]"
                           : "border-[#E1DFE1]"
@@ -320,7 +320,7 @@ export default function ProductDetailClient({ product, onAddToCart }) {
             {/* Add to Cart */}
             <button
               onClick={handleAddToCart}
-              className="w-full px-6 py-4 bg-[#FF4000] text-white rounded-lg font-medium hover:bg-[#E63600]"
+              className="w-full px-6 py-4 bg-[#FF4000] text-white rounded-lg font-medium hover:bg-[#E63600] cursor-pointer"
             >
               Add to cart
             </button>

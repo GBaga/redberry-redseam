@@ -99,21 +99,26 @@ export default function ProductFilters({
           setShowPriceFilter(!showPriceFilter);
           setShowSortDropdown(false);
         }}
-        className={`flex items-center gap-2 px-3 py-1 hover:opacity-70 transition-opacity ${
+        className={`flex items-center gap-2 px-3 py-1 hover:opacity-70 transition-opacity cursor-pointer cursor-pointer ${
           minPrice || maxPrice ? "text-[#FF4000] font-medium" : ""
         }`}
         aria-expanded={showPriceFilter}
         aria-haspopup="true"
       >
         <svg
-          width="16"
-          height="16"
-          viewBox="0 0 24 24"
+          width="24"
+          height="25"
+          viewBox="0 0 24 25"
           fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
+          xmlns="http://www.w3.org/2000/svg"
         >
-          <polygon points="22,3 2,3 10,12.46 10,19 14,21 14,12.46 22,3" />
+          <path
+            d="M10.5 6.5L20.25 6.5M10.5 6.5C10.5 7.32843 9.82843 8 9 8C8.17157 8 7.5 7.32843 7.5 6.5M10.5 6.5C10.5 5.67157 9.82843 5 9 5C8.17157 5 7.5 5.67157 7.5 6.5M3.75 6.5H7.5M10.5 18.5H20.25M10.5 18.5C10.5 19.3284 9.82843 20 9 20C8.17157 20 7.5 19.3284 7.5 18.5M10.5 18.5C10.5 17.6716 9.82843 17 9 17C8.17157 17 7.5 17.6716 7.5 18.5M3.75 18.5L7.5 18.5M16.5 12.5L20.25 12.5M16.5 12.5C16.5 13.3284 15.8284 14 15 14C14.1716 14 13.5 13.3284 13.5 12.5M16.5 12.5C16.5 11.6716 15.8284 11 15 11C14.1716 11 13.5 11.6716 13.5 12.5M3.75 12.5H13.5"
+            stroke="#0F172A"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
         </svg>
         Filter
       </button>
@@ -126,7 +131,7 @@ export default function ProductFilters({
             setShowSortDropdown(!showSortDropdown);
             setShowPriceFilter(false);
           }}
-          className={`flex items-center gap-1 px-3 py-1 hover:opacity-70 transition-opacity ${
+          className={`flex items-center gap-1 px-3 py-1 hover:opacity-70 transition-opacity cursor-pointer ${
             sort ? "text-[#FF4000] font-medium" : ""
           }`}
           aria-expanded={showSortDropdown}
@@ -162,7 +167,7 @@ export default function ProductFilters({
           <div className="absolute right-0 top-full mt-2 w-56 bg-white border border-[#E1DFE1] rounded-lg shadow-lg z-50 py-2">
             <button
               onClick={() => handleSortSelect("")}
-              className={`w-full text-left px-4 py-2 hover:bg-gray-50 ${
+              className={`w-full text-left px-4 py-2 hover:bg-gray-50 cursor-pointer ${
                 !sort ? "text-[#FF4000] font-medium" : ""
               }`}
             >
@@ -172,7 +177,7 @@ export default function ProductFilters({
               <button
                 key={option.value}
                 onClick={() => handleSortSelect(option.value)}
-                className={`w-full text-left px-4 py-2 hover:bg-gray-50 ${
+                className={`w-full text-left px-4 py-2 hover:bg-gray-50 cursor-pointer ${
                   sort === option.value ? "text-[#FF4000] font-medium" : ""
                 }`}
               >
@@ -198,7 +203,7 @@ export default function ProductFilters({
             <h3 className="font-semibold">Select price range</h3>
             <button
               onClick={() => setShowPriceFilter(false)}
-              className="text-gray-500 hover:text-gray-700"
+              className="text-gray-500 hover:text-gray-700 cursor-pointer"
               aria-label="Close price filter"
             >
               <svg
@@ -271,13 +276,13 @@ export default function ProductFilters({
           <div className="flex justify-between gap-3">
             <button
               onClick={handleClearPriceFilters}
-              className="px-4 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+              className="px-4 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer"
             >
               Clear
             </button>
             <button
               onClick={handleApplyFilters}
-              className="px-6 py-2 bg-[#FF4000] text-white rounded-lg hover:bg-[#E63900] transition-colors"
+              className="px-6 py-2 bg-[#FF4000] text-white rounded-lg hover:bg-[#E63900] transition-colors cursor-pointer"
             >
               Apply
             </button>
