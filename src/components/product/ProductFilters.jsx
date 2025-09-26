@@ -99,7 +99,7 @@ export default function ProductFilters({
           setShowPriceFilter(!showPriceFilter);
           setShowSortDropdown(false);
         }}
-        className={`flex items-center gap-2 px-3 py-1 hover:opacity-70 transition-opacity cursor-pointer cursor-pointer ${
+        className={`flex items-center gap-2 px-3 py-1 hover:opacity-70 transition-opacity cursor-pointer ${
           minPrice || maxPrice ? "text-[#FF4000] font-medium" : ""
         }`}
         aria-expanded={showPriceFilter}
@@ -194,7 +194,7 @@ export default function ProductFilters({
           className="fixed bg-white border border-[#E1DFE1] rounded-lg shadow-lg z-50 p-4"
           style={{
             top: `${filterPosition.top}px`,
-            left: `${filterPosition.left}px`,
+            left: `${filterPosition.left - 220}px`,
             width: "320px",
             maxWidth: "calc(100vw - 32px)",
           }}

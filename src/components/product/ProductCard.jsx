@@ -22,10 +22,10 @@ export default function ProductCard({ id, name, price, cover_image }) {
 
       {/* Text content */}
       <div className="flex flex-col gap-0.5 w-full">
-        <h3 className="text-[18px] leading-[27px] font-medium text-[#10151F] font-[Poppins]">
+        <h3 className="text-[18px] font-medium leading-[18px] tracking-normal text-[#10151F]">
           {name}
         </h3>
-        <p className="text-[16px] leading-[24px] font-medium text-[#10151F] font-[Poppins]">
+        <p className="text-[16px] font-medium leading-[16px] tracking-normal text-[#10151F]">
           ${price}
         </p>
       </div>
