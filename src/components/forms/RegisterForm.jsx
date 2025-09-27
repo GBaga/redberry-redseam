@@ -7,14 +7,6 @@ import { useRouter } from "next/navigation";
 import { register } from "@/services/api";
 
 const RegisterForm = () => {
-  const getTextWidth = (text, font) => {
-    if (typeof window === "undefined") return 0;
-    const canvas = document.createElement("canvas");
-    const context = canvas.getContext("2d");
-    context.font = font;
-    return context.measureText(text).width;
-  };
-
   const router = useRouter();
 
   const [formData, setFormData] = useState({
@@ -108,6 +100,15 @@ const RegisterForm = () => {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const getTextWidth = (text, font = "14px Poppins") => {
+    if (typeof window === "undefined") return 0;
+    const canvas = document.createElement("canvas");
+    const context = canvas.getContext("2d");
+    if (!context) return 0;
+    context.font = font;
+    return context.measureText(text).width;
   };
 
   return (
