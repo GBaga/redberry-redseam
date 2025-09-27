@@ -143,7 +143,7 @@ export async function addToCart(productId, { quantity, color, size }) {
 /**
  * Update product quantity in cart
  */
-export async function updateCartItem(productId, quantity) {
+export async function updateCartItem(productId, quantity, { color, size }) {
   const token = getAuthToken();
   if (!token) throw new Error("Authentication required");
 
@@ -154,7 +154,7 @@ export async function updateCartItem(productId, quantity) {
       Accept: "application/json",
       Authorization: token,
     },
-    body: JSON.stringify({ quantity }),
+    body: JSON.stringify({ quantity, color, size }),
   });
 
   return handleResponse(response);

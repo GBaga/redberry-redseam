@@ -340,11 +340,12 @@ export default function MainLayout({ children }) {
 
   // Update quantity
   const handleUpdateQuantity = useCallback(
-    async (productId, newQuantity) => {
-      // Optimistic update
+    async (productId, newQuantity, color, size) => {
       updateState((prev) => {
         const updatedCartItems = prev.cartItems.map((item) =>
-          item.id === productId
+          item.id === productId &&
+          (item.color ?? "") === (color ?? "") &&
+          (item.size ?? "") === (size ?? "")
             ? {
                 ...item,
                 quantity: newQuantity,
@@ -352,30 +353,20 @@ export default function MainLayout({ children }) {
               }
             : item
         );
-
-        // Dispatch custom event for other components
         window.dispatchEvent(
           new CustomEvent("cartUpdated", {
             detail: { cartItems: updatedCartItems },
           })
         );
-
-        return {
-          ...prev,
-          cartItems: updatedCartItems,
-        };
+        return { ...prev, cartItems: updatedCartItems };
       });
 
       const authData = getAuthData();
       if (authData?.token) {
         try {
-          await updateCartItem(productId, newQuantity);
+          await updateCartItem(productId, newQuantity, { color, size });
         } catch (error) {
           console.error("Failed to update quantity:", error);
-          if (error.message?.includes("Authentication failed")) {
-            handleLogout();
-          }
-          // Revert on failure
           await loadCart();
         }
       }
