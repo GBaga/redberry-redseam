@@ -1,66 +1,59 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { login } from "@/services/api"; // import service
+import { useRouter } from "next/navigation";
+import { login } from "@/services/api";
 
 const LoginForm = () => {
-  const [formData, setFormData] = useState({
-    email: "",
-    password: "",
-  });
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  const getTextWidth = (text, font) => {
+    if (typeof document === "undefined") return 0;
+    const canvas = document.createElement("canvas");
+    const context = canvas.getContext("2d");
+    if (!context) return 0;
+    context.font = font;
+    return context.measureText(text).width;
+  };
+
+  const router = useRouter();
+  const [formData, setFormData] = useState({ email: "", password: "" });
   const [errors, setErrors] = useState({});
   const [apiError, setApiError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
-  /** Validate form fields */
   const validateForm = () => {
     const newErrors = {};
-
-    if (!formData.email.trim()) {
-      newErrors.email = "Email is required";
-    } else if (formData.email.length < 3) {
-      newErrors.email = "Email must be at least 3 characters";
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      newErrors.email = "Please enter a valid email address";
-    }
-
-    if (!formData.password) {
-      newErrors.password = "Password is required";
-    } else if (formData.password.length < 3) {
-      newErrors.password = "Password must be at least 3 characters";
-    }
-
+    if (!formData.email.trim()) newErrors.email = "Email is required";
+    if (!formData.password.trim()) newErrors.password = "Password is required";
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  /** Handle input change */
   const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-
-    if (errors[name]) {
-      setErrors((prev) => ({ ...prev, [name]: "" }));
+    setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+    if (errors[e.target.name]) {
+      setErrors((prev) => ({ ...prev, [e.target.name]: "" }));
     }
     if (apiError) setApiError("");
   };
 
-  /** Handle form submission */
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     if (!validateForm()) return;
-
     setIsLoading(true);
     setApiError("");
 
     try {
-      await login(formData); // call authService login
-      // Redirect after successful login
-      window.location.href = "/";
+      await login(formData);
+      router.push("/");
     } catch (err) {
       setApiError(err.message || "Login failed");
       if (err.errors) setErrors(err.errors);
@@ -70,9 +63,9 @@ const LoginForm = () => {
   };
 
   return (
-    <div className="min-h-full bg-gray-50 flex">
+    <div className="min-h-screen flex">
       {/* Left Side - Hero Image */}
-      <div className="w-[948px] min-h-[1000px] h-full relative">
+      <div className="hidden lg:block lg:w-1/2 relative">
         <Image
           src="/images/login-hero.webp"
           alt="Hero image"
@@ -82,7 +75,7 @@ const LoginForm = () => {
         />
       </div>
 
-      {/* Right Side - Login Form */}
+      {/* Right Side - Form */}
       <div className="flex-1 flex items-center justify-center px-6 py-12">
         <div className="w-full max-w-[554px]">
           <h1 className="font-poppins font-semibold text-[42px] leading-[63px] text-[#10151F] mb-12">
@@ -90,94 +83,100 @@ const LoginForm = () => {
           </h1>
 
           <form onSubmit={handleSubmit} className="space-y-12">
-            <div className="space-y-6">
-              {/* Email Field */}
-              <div className="space-y-1">
-                <div className="flex items-center bg-white border border-[#E1DFE1] rounded-lg px-3 py-3 h-[42px] focus-within:ring-2 focus-within:ring-red-500 focus-within:border-red-500">
-                  <div className="flex items-center flex-1 gap-1">
-                    <label
-                      htmlFor="email"
-                      className="font-poppins text-sm text-[#3E424A] whitespace-nowrap"
-                    >
-                      Email
-                    </label>
-                    <span className="text-[#FF4000] text-sm font-poppins">
-                      *
-                    </span>
-                    <input
-                      id="email"
-                      name="email"
-                      type="email"
-                      value={formData.email}
-                      onChange={handleInputChange}
-                      className="flex-1 bg-transparent border-none outline-none font-poppins text-sm text-[#10151F]"
-                      disabled={isLoading}
-                    />
-                  </div>
-                </div>
-                {errors.email && (
-                  <p className="font-poppins text-sm text-[#FF4000] mt-1">
-                    {errors.email}
-                  </p>
-                )}
-              </div>
+            {/* Email */}
+            <div className="relative">
+              <input
+                type="email"
+                name="email"
+                placeholder="Email"
+                value={formData.email}
+                onChange={handleInputChange}
+                className="w-full bg-white border border-[#E1DFE1] rounded-lg px-4 py-3 font-poppins text-sm text-[#10151F] focus:outline-none focus:ring-2 focus:ring-red-500"
+                disabled={isLoading}
+              />
 
-              {/* Password Field */}
-              <div className="space-y-1">
-                <div className="flex items-center bg-white border border-[#E1DFE1] rounded-lg px-3 py-3 h-[42px] focus-within:ring-2 focus-within:ring-red-500 focus-within:border-red-500">
-                  <div className="flex items-center flex-1 gap-1">
-                    <label
-                      htmlFor="password"
-                      className="font-poppins text-sm text-[#3E424A] whitespace-nowrap"
-                    >
-                      Password
-                    </label>
-                    <span className="text-[#FF4000] text-sm font-poppins">
-                      *
-                    </span>
-                    <input
-                      id="password"
-                      name="password"
-                      type={showPassword ? "text" : "password"}
-                      value={formData.password}
-                      onChange={handleInputChange}
-                      className="flex-1 bg-transparent border-none outline-none font-poppins text-sm text-[#10151F]"
-                      disabled={isLoading}
-                    />
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="flex items-center justify-center p-1 hover:bg-gray-100 rounded transition-colors"
-                    disabled={isLoading}
-                  >
-                    <svg
-                      width="20"
-                      height="20"
-                      viewBox="0 0 20 20"
-                      fill="none"
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="text-[#0F172A]"
-                    >
-                      <path
-                        d="M10 3C5 3 1.73 7.11 1 10c.73 2.89 4 7 9 7s8.27-4.11 9-7c-.73-2.89-4-7-9-7zm0 12a5 5 0 1 1 0-10 5 5 0 0 1 0 10zm0-8a3 3 0 1 0 0 6 3 3 0 0 0 0-6z"
-                        fill="currentColor"
-                      />
-                      {!showPassword && (
-                        <path
-                          d="M17.94 2.06a1 1 0 0 0-1.41 0l-15 15a1 1 0 1 0 1.41 1.41l15-15a1 1 0 0 0 0-1.41z"
-                          fill="currentColor"
-                        />
-                      )}
-                    </svg>
-                  </button>
-                </div>
-                {errors.password && (
-                  <p className="font-poppins text-sm text-[#FF4000] mt-1">
-                    {errors.password}
-                  </p>
-                )}
-              </div>
+              {/* Asterisk that disappears when user types */}
+              {!formData.email && isClient && (
+                <span
+                  className="absolute top-1/2 -translate-y-1/2 text-[#FF4000] pointer-events-none text-sm font-poppins"
+                  style={{
+                    left: `calc(16px + ${getTextWidth(
+                      "Email",
+                      "14px Poppins"
+                    )}px + 4px)`,
+                  }}
+                >
+                  *
+                </span>
+              )}
+
+              {errors.email && (
+                <p className="font-poppins text-sm text-[#FF4000] mt-1">
+                  {errors.email}
+                </p>
+              )}
+            </div>
+
+            {/* Password */}
+            <div className="relative">
+              <input
+                type={showPassword ? "text" : "password"}
+                name="password"
+                placeholder="Password"
+                value={formData.password}
+                onChange={handleInputChange}
+                className="w-full bg-white border border-[#E1DFE1] rounded-lg px-4 py-3 font-poppins text-sm text-[#10151F] focus:outline-none focus:ring-2 focus:ring-red-500 pr-10"
+                disabled={isLoading}
+              />
+
+              {/* Asterisk that disappears when user types */}
+              {!formData.password && isClient && (
+                <span
+                  className="absolute top-1/2 -translate-y-1/2 text-[#FF4000] pointer-events-none text-sm font-poppins"
+                  style={{
+                    left: `calc(16px + ${getTextWidth(
+                      "Password",
+                      "14px Poppins"
+                    )}px + 4px)`,
+                  }}
+                >
+                  *
+                </span>
+              )}
+
+              {/* Eye toggle button */}
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-600 cursor-pointer"
+              >
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                >
+                  {showPassword ? (
+                    <>
+                      <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
+                      <line x1="1" y1="1" x2="23" y2="23" />
+                    </>
+                  ) : (
+                    <>
+                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                      <circle cx="12" cy="12" r="3" />
+                    </>
+                  )}
+                </svg>
+              </button>
+
+              {errors.password && (
+                <p className="font-poppins text-sm text-[#FF4000] mt-1">
+                  {errors.password}
+                </p>
+              )}
             </div>
 
             {/* API Error */}
@@ -196,14 +195,7 @@ const LoginForm = () => {
                 disabled={isLoading}
                 className="w-full bg-[#FF4000] hover:bg-red-600 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-poppins text-sm py-3 px-5 rounded-[10px] transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
               >
-                {isLoading ? (
-                  <div className="flex items-center justify-center gap-2">
-                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                    <span>Signing in...</span>
-                  </div>
-                ) : (
-                  "Log in"
-                )}
+                {isLoading ? "Signing in..." : "Log in"}
               </button>
 
               <div className="flex items-center justify-center gap-2">
@@ -212,7 +204,7 @@ const LoginForm = () => {
                 </span>
                 <Link
                   href="/register"
-                  className="font-poppins font-medium text-sm text-[#FF4000] hover:text-red-600 transition-colors"
+                  className="font-poppins font-medium text-sm text-[#FF4000] hover:text-red-600 transition-colors cursor-pointer"
                 >
                   Register
                 </Link>

@@ -3,18 +3,138 @@
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { getCart } from "@/services/api";
 
 const Header = ({
   userAvatar = "/images/placeholder.png",
   cartItemCount = 0,
   onCartClick,
   onProfileClick,
+  onCartUpdate, // New prop to update cart in parent component
 }) => {
   const pathname = usePathname();
+  const router = useRouter();
   const [isImageError, setIsImageError] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [currentUser, setCurrentUser] = useState(null);
 
   const isAuthPage = pathname === "/login" || pathname === "/register";
+
+  // Check authentication status and load cart
+  useEffect(() => {
+    const checkAuthAndLoadCart = async () => {
+      if (typeof window === "undefined") return;
+
+      const token = localStorage.getItem("token");
+      const userData = localStorage.getItem("user");
+
+      if (token && userData) {
+        try {
+          const user = JSON.parse(userData);
+          const previousUserId = currentUser?.id;
+
+          // If this is a different user, clear cart first
+          if (previousUserId && previousUserId !== user.id) {
+            if (onCartUpdate) {
+              onCartUpdate([]);
+            }
+          }
+
+          setCurrentUser(user);
+          setIsLoggedIn(true);
+
+          // Load cart for current user
+          try {
+            const cart = await getCart();
+            if (onCartUpdate) {
+              onCartUpdate(cart);
+            }
+          } catch (cartError) {
+            console.error("Failed to load cart:", cartError);
+            if (onCartUpdate) {
+              onCartUpdate([]);
+            }
+
+            // If authentication failed, clear everything
+            if (cartError.message.includes("Authentication failed")) {
+              handleLogout();
+            }
+          }
+        } catch (error) {
+          console.error("Error parsing user data:", error);
+          handleLogout();
+        }
+      } else {
+        // No token or user data, ensure everything is cleared
+        setIsLoggedIn(false);
+        setCurrentUser(null);
+        if (onCartUpdate) {
+          onCartUpdate([]);
+        }
+      }
+    };
+
+    checkAuthAndLoadCart();
+  }, [pathname]); // Re-run when pathname changes
+
+  // Listen for storage changes (when user logs in/out in another tab)
+  useEffect(() => {
+    const handleStorageChange = (e) => {
+      if (e.key === "token" || e.key === "user") {
+        // Re-check auth status when token/user changes
+        window.location.reload();
+      }
+    };
+
+    if (typeof window !== "undefined") {
+      window.addEventListener("storage", handleStorageChange);
+      return () => window.removeEventListener("storage", handleStorageChange);
+    }
+  }, []);
+
+  // Listen for custom cart clear events
+  useEffect(() => {
+    const handleClearCart = () => {
+      if (onCartUpdate) {
+        onCartUpdate([]);
+      }
+    };
+
+    if (typeof window !== "undefined") {
+      window.addEventListener("clearCart", handleClearCart);
+      return () => window.removeEventListener("clearCart", handleClearCart);
+    }
+  }, [onCartUpdate]);
+
+  const handleLogout = () => {
+    // Clear all user data
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+    }
+
+    setIsLoggedIn(false);
+    setCurrentUser(null);
+
+    // Clear cart
+    if (onCartUpdate) {
+      onCartUpdate([]);
+    }
+
+    // Redirect to login
+    router.push("/login");
+  };
+
+  const handleProfileClick = () => {
+    if (onProfileClick) {
+      // Pass logout function to parent component
+      onProfileClick(handleLogout);
+    } else {
+      // Default behavior - just logout
+      handleLogout();
+    }
+  };
 
   const HandEyeIcon = () => (
     <svg
@@ -77,10 +197,10 @@ const Header = ({
   );
 
   return (
-    <header className="fixed top-0 left-0 right-0 w-full h-20 flex items-center justify-between px-6 md:px-12 lg:px-24 bg-white z-50 shadow-sm">
+    <header className="fixed top-0 left-0 right-0 w-full h-20 flex items-center justify-between px-6 md:px-12 lg:px-24 bg-white z-50 ">
       <Link
         href="/"
-        className="flex items-center gap-2 hover:opacity-80 transition-opacity focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 rounded-md p-1"
+        className="flex items-center gap-2 hover:scale-105 active:scale-95 transition-all duration-200 focus:outline-none  rounded-lg p-2 cursor-pointer"
         aria-label="RedSeam Clothing home"
       >
         <HandEyeIcon />
@@ -90,59 +210,67 @@ const Header = ({
       </Link>
 
       {isAuthPage ? (
-        <div className="flex items-center gap-3">
-          <Link
-            href="/login"
-            className="w-10 h-10 rounded-full hover:bg-gray-200 transition-colors flex items-center justify-center cursor-pointer"
-            aria-label="User profile menu"
-          >
-            <UserProfileIcon />
-          </Link>
-          <span className="font-poppins text-sm font-normal text-slate-900 whitespace-nowrap">
-            Login
-          </span>
-        </div>
-      ) : (
+        <Link href="/login" className="group cursor-pointer">
+          <div className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 active:bg-gray-200 transition-all duration-200">
+            <div className="w-10 h-10 rounded-full group-hover:bg-gray-200 group-active:bg-gray-300 transition-all duration-200 flex items-center justify-center">
+              <UserProfileIcon />
+            </div>
+            <span className="font-poppins text-sm font-normal text-slate-900 whitespace-nowrap group-hover:text-slate-700 transition-colors duration-200">
+              Log in
+            </span>
+          </div>
+        </Link>
+      ) : isLoggedIn ? (
         <div className="flex items-center gap-5">
           <button
             onClick={onCartClick}
-            className="relative hover:opacity-80 transition-opacity rounded-md p-1 cursor-pointer"
+            className="relative hover:scale-105 active:scale-95 transition-all duration-200 rounded-lg p-2 cursor-pointer focus:outline-none focus:ring-2 focus:ring-gray-300 focus:ring-offset-2"
             aria-label={`Shopping cart${
               cartItemCount > 0 ? ` with ${cartItemCount} items` : ""
             }`}
           >
             <CartIcon />
             {cartItemCount > 0 && (
-              <span className="absolute -top-2 -right-2 bg-red-600 text-white text-xs rounded-full min-w-[20px] h-5 px-1 flex items-center justify-center font-medium">
+              <span className="absolute -top-1 -right-1 bg-red-600 text-white text-xs rounded-full min-w-[20px] h-5 px-1 flex items-center justify-center font-medium animate-pulse">
                 {cartItemCount > 99 ? "99+" : cartItemCount}
               </span>
             )}
           </button>
 
           <button
-            onClick={onProfileClick}
-            className="flex items-center gap-2 hover:opacity-80 transition-opacity rounded-md p-1 cursor-pointer"
+            onClick={handleProfileClick}
+            className="flex items-center gap-2 hover:scale-105 active:scale-95transition-all duration-200 rounded-lg p-2 cursor-pointer focus:outline-none focus:ring-2 focus:ring-gray-300 focus:ring-offset-2"
             aria-label="User profile menu"
           >
-            {/* Fixed: Added position relative to parent div */}
-            <div className="relative w-10 h-10 overflow-hidden rounded-full border-2 border-gray-200">
+            <div className="relative w-10 h-10 overflow-hidden rounded-full border-2 border-gray-200 hover:border-gray-300 transition-colors duration-200">
               {!isImageError && userAvatar ? (
                 <Image
                   src={userAvatar}
                   alt="User avatar"
                   fill
-                  className="object-cover"
+                  className="object-cover hover:scale-110 transition-transform duration-300"
                   sizes="40px"
                   onError={() => setIsImageError(true)}
                 />
               ) : (
-                <div className="flex items-center justify-center bg-gray-100 w-full h-full">
+                <div className="flex items-center justify-center bg-gray-100 hover:bg-gray-200 w-full h-full transition-colors duration-200">
                   <UserProfileIcon />
                 </div>
               )}
             </div>
           </button>
         </div>
+      ) : (
+        <Link href="/login" className="group cursor-pointer">
+          <div className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 active:bg-gray-200 transition-all duration-200">
+            <div className="w-10 h-10 rounded-full group-hover:bg-gray-200 group-active:bg-gray-300 transition-all duration-200 flex items-center justify-center">
+              <UserProfileIcon />
+            </div>
+            <span className="font-poppins text-sm font-normal text-slate-900 whitespace-nowrap group-hover:text-slate-700 transition-colors duration-200">
+              Login
+            </span>
+          </div>
+        </Link>
       )}
     </header>
   );

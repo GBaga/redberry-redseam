@@ -181,28 +181,25 @@ const CheckoutPage = () => {
   const handleCheckout = async () => {
     // Validate form first
     if (!validateForm()) {
-      console.log("Form validation failed:", errors);
       return;
     }
 
     // Check if cart has items
     if (!cartItems || cartItems.length === 0) {
-      alert("Your cart is empty");
+      setErrors({ general: "Your cart is empty" });
+      return;
+    }
+
+    const token = localStorage.getItem("token");
+    if (!token) {
+      router.push("/login");
       return;
     }
 
     setIsLoading(true);
+    setErrors({}); // Clear previous errors
 
     try {
-      const token = localStorage.getItem("token");
-
-      if (!token) {
-        alert("Please login to continue with checkout");
-        router.push("/login");
-        return;
-      }
-
-      // Prepare checkout data
       const checkoutData = {
         name: formData.name.trim(),
         surname: formData.surname.trim(),
@@ -210,8 +207,6 @@ const CheckoutPage = () => {
         zip_code: formData.zip_code.trim(),
         address: formData.address.trim(),
       };
-
-      console.log("Sending checkout data:", checkoutData);
 
       const response = await fetch(`${API_URL}/cart/checkout`, {
         method: "POST",
@@ -224,7 +219,6 @@ const CheckoutPage = () => {
       });
 
       const responseData = await response.json().catch(() => ({}));
-      console.log("Response:", response.status, responseData);
 
       if (response.ok) {
         // Success - show modal and clear cart
@@ -240,25 +234,26 @@ const CheckoutPage = () => {
           zip_code: "",
           address: "",
         });
-      } else {
+      } else if (response.status === 422 && responseData.errors) {
         // Handle validation errors from server
-        if (response.status === 422 && responseData.errors) {
-          const serverErrors = {};
-          Object.keys(responseData.errors).forEach((key) => {
-            serverErrors[key] = responseData.errors[key][0];
-          });
-          setErrors(serverErrors);
-          console.log("Server validation errors:", serverErrors);
-        } else if (response.status === 401) {
-          alert("Your session has expired. Please login again.");
-          router.push("/login");
-        } else {
-          alert(responseData.message || "Checkout failed. Please try again.");
-        }
+        const serverErrors = {};
+        Object.keys(responseData.errors).forEach((key) => {
+          serverErrors[key] = responseData.errors[key][0];
+        });
+        setErrors(serverErrors);
+      } else if (response.status === 401) {
+        setErrors({ general: "Your session has expired. Please login again." });
+        setTimeout(() => router.push("/login"), 2000);
+      } else {
+        setErrors({
+          general: responseData.message || "Checkout failed. Please try again.",
+        });
       }
     } catch (error) {
       console.error("Checkout error:", error);
-      alert("An error occurred during checkout. Please try again.");
+      setErrors({
+        general: "An error occurred during checkout. Please try again.",
+      });
     } finally {
       setIsLoading(false);
     }
@@ -395,7 +390,7 @@ const CheckoutPage = () => {
         <div className="flex flex-col lg:flex-row gap-8 lg:gap-[131px]">
           {/* Form Section */}
           <div className="flex-1 lg:max-w-[1129px]">
-            <div className="bg-[#F8F6F7] rounded-2xl p-6 lg:p-[47px]">
+            <div className="bg-[#F8F6F7] rounded-2xl p-6 lg:p-[47px] min-h-[635px] h-full">
               <h2 className="text-xl lg:text-[22px] font-medium text-gray-700 mb-6 lg:mb-[37px]">
                 Order details
               </h2>
@@ -489,9 +484,10 @@ const CheckoutPage = () => {
                         className="w-full outline-none text-sm text-gray-900 placeholder-gray-600"
                       />
                     </div>
-                    {errors.zip_code && (
+
+                    {errors.address && (
                       <p className="text-red-500 text-xs mt-1">
-                        {errors.zip_code}
+                        {errors.address}
                       </p>
                     )}
                   </div>
@@ -511,10 +507,9 @@ const CheckoutPage = () => {
                         className="w-full outline-none text-sm text-gray-900 placeholder-gray-600"
                       />
                     </div>
-
-                    {errors.address && (
+                    {errors.zip_code && (
                       <p className="text-red-500 text-xs mt-1">
-                        {errors.address}
+                        {errors.zip_code}
                       </p>
                     )}
                   </div>

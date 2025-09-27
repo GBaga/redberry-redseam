@@ -25,3 +25,20 @@ body {
 * {
   font-family: inherit;
 }
+
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 30px white inset !important;
+  -webkit-text-fill-color: #111827 !important; /* text-gray-900 */
+}
+
+/* For other browsers */
+input:-moz-autofill {
+  background-color: white !important;
+}
+
+input:autofill {
+  background-color: white !important;
+}

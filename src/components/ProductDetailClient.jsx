@@ -219,16 +219,16 @@ export default function ProductDetailClient({ product, onAddToCart }) {
 
           {/* Right Info */}
           <div className="lg:col-span-5 space-y-6">
-            <h1 className="text-2xl md:text-3xl lg:text-[32px] font-semibold text-[#10151F] leading-tight">
+            <h1 className="text-2xl md:text-3xl lg:text-[32px] font-semibold text-[#10151F] leading-tight mb-5">
               {product.name}
             </h1>
-            <p className="text-2xl md:text-3xl lg:text-[32px] font-semibold text-[#10151F]">
+            <p className="text-2xl md:text-3xl lg:text-[32px] font-semibold text-[#10151F] mb-14">
               ${currentPrice}
             </p>
 
             {/* Color Selection */}
             {product?.available_colors?.length > 0 && (
-              <div className="space-y-3">
+              <div className="space-y-4">
                 <p className="text-base font-medium text-[#10151F]">
                   Color: <span className="font-normal">{selectedColor}</span>
                 </p>
@@ -258,7 +258,7 @@ export default function ProductDetailClient({ product, onAddToCart }) {
 
             {/* Size Selection */}
             {product?.available_sizes?.length > 0 && (
-              <div className="space-y-3">
+              <div className="space-y-4">
                 <p className="text-base font-medium text-[#10151F]">
                   Size: <span className="font-normal">{selectedSize}</span>
                 </p>
@@ -283,47 +283,54 @@ export default function ProductDetailClient({ product, onAddToCart }) {
             )}
 
             {/* Quantity */}
-            <div className="relative w-[70px]">
-              <select
-                value={quantity}
-                onChange={(e) => setQuantity(parseInt(e.target.value))}
-                className="appearance-none w-full h-[42px] px-4 py-[9px] border border-[#E1DFE1] rounded-[10px] text-[#10151F] font-[Poppins] font-normal text-[16px] leading-[24px] opacity-80 bg-transparent focus:outline-none"
-              >
-                {Array.from({ length: 10 }, (_, i) => i + 1).map((num) => (
-                  <option key={num} value={num}>
-                    {num}
-                  </option>
-                ))}
-              </select>
-
-              {/* Chevron */}
-              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
-                <svg
-                  width="20"
-                  height="20"
-                  viewBox="0 0 20 20"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="w-5 h-5"
+            <div className="space-y-4">
+              <p className="text-base font-medium text-[#10151F] mb-4">
+                Quantity
+              </p>
+              <div className="relative w-[70px]">
+                <select
+                  value={quantity}
+                  onChange={(e) => setQuantity(parseInt(e.target.value))}
+                  className="appearance-none w-full h-[42px] px-4 py-[9px] border border-[#E1DFE1] rounded-[10px] text-[#10151F] font-[Poppins] font-normal text-[16px] leading-[24px] opacity-80 bg-transparent focus:outline-none"
                 >
-                  <path
-                    fillRule="evenodd"
-                    clipRule="evenodd"
-                    d="M5.23017 7.21967C5.52306 6.92678 6.01794 6.92678 6.31083 7.21967L10 10.9393L13.6892 7.21967C13.9821 6.92678 14.4769 6.92678 14.7698 7.21967C15.0627 7.51256 15.0627 8.00744 14.7698 8.30033L10.5303 12.5303C10.2374 12.8232 9.74254 12.8232 9.44965 12.5303L5.23017 8.30033C4.93728 8.00744 4.93728 7.51256 5.23017 7.21967Z"
-                    fill="#10151F"
-                    opacity="0.8"
-                  />
-                </svg>
+                  {Array.from({ length: 10 }, (_, i) => i + 1).map((num) => (
+                    <option key={num} value={num}>
+                      {num}
+                    </option>
+                  ))}
+                </select>
+
+                {/* Chevron */}
+                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
+                  <svg
+                    width="20"
+                    height="20"
+                    viewBox="0 0 20 20"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="w-5 h-5"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      clipRule="evenodd"
+                      d="M5.23017 7.21967C5.52306 6.92678 6.01794 6.92678 6.31083 7.21967L10 10.9393L13.6892 7.21967C13.9821 6.92678 14.4769 6.92678 14.7698 7.21967C15.0627 7.51256 15.0627 8.00744 14.7698 8.30033L10.5303 12.5303C10.2374 12.8232 9.74254 12.8232 9.44965 12.5303L5.23017 8.30033C4.93728 8.00744 4.93728 7.51256 5.23017 7.21967Z"
+                      fill="#10151F"
+                      opacity="0.8"
+                    />
+                  </svg>
+                </div>
               </div>
             </div>
 
             {/* Add to Cart */}
             <button
               onClick={handleAddToCart}
-              className="w-full px-6 py-4 bg-[#FF4000] text-white rounded-lg font-medium hover:bg-[#E63600] cursor-pointer"
+              className="w-full px-6 py-4 bg-[#FF4000] text-white rounded-lg font-medium hover:bg-[#E63600] cursor-pointer mt-14"
             >
               Add to cart
             </button>
+
+            <div className="w-full h-px bg-gray-300 my-14"></div>
 
             {/* Details with Brand */}
             <div className="flex flex-col w-[704px] gap-7">

@@ -17,33 +17,87 @@ export default function MainLayout({ children }) {
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [userAvatar, setUserAvatar] = useState("/images/placeholder.png");
   const [isLoading, setIsLoading] = useState(false);
+  const [currentUserId, setCurrentUserId] = useState(null);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
-  // Load cart and user profile
+  // Check authentication status and load user data
   useEffect(() => {
-    loadCart();
-    loadUserProfile();
+    checkAuthAndLoadUserData();
   }, []);
 
-  const loadUserProfile = () => {
+  const checkAuthAndLoadUserData = () => {
+    if (typeof window === "undefined") return;
+
+    const token = localStorage.getItem("token");
     const storedUser = localStorage.getItem("user");
-    if (storedUser) {
+
+    if (token && storedUser) {
       try {
         const user = JSON.parse(storedUser);
+        const previousUserId = currentUserId;
+
+        // If user changed, clear cart first
+        if (previousUserId && previousUserId !== user.id) {
+          setCartItems([]);
+          localStorage.removeItem("cart");
+        }
+
+        setCurrentUserId(user.id);
+        setIsLoggedIn(true);
         setUserAvatar(
           user.avatar || user.profile_photo || "/images/placeholder.png"
         );
+
+        // Load cart for current user
+        loadCart();
       } catch (error) {
-        console.error("Error loading user profile:", error);
+        console.error("Error parsing user data:", error);
+        handleLogout();
       }
+    } else {
+      // No authentication - clear everything
+      setIsLoggedIn(false);
+      setCurrentUserId(null);
+      setCartItems([]);
+      setUserAvatar("/images/placeholder.png");
+      localStorage.removeItem("cart");
     }
   };
 
+  // Load cart from API or localStorage fallback
   const loadCart = async () => {
+    if (typeof window === "undefined") return;
+
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      // No token - check localStorage for guest cart
+      const savedCart = localStorage.getItem("cart");
+      if (savedCart) {
+        try {
+          const parsedCart = JSON.parse(savedCart);
+          setCartItems(Array.isArray(parsedCart) ? parsedCart : []);
+        } catch {
+          setCartItems([]);
+        }
+      }
+      return;
+    }
+
+    // Logged in - fetch from API
     try {
       const cartData = await getCart();
       setCartItems(Array.isArray(cartData) ? cartData : []);
     } catch (error) {
       console.error("Error loading cart:", error);
+
+      // If auth error, clear everything
+      if (error.message.includes("Authentication failed")) {
+        handleLogout();
+        return;
+      }
+
+      // For other errors, fall back to localStorage
       const savedCart = localStorage.getItem("cart");
       if (savedCart) {
         try {
@@ -56,10 +110,56 @@ export default function MainLayout({ children }) {
     }
   };
 
-  // Save cart to localStorage as backup
+  // Handle logout
+  const handleLogout = () => {
+    if (typeof window === "undefined") return;
+
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    localStorage.removeItem("cart");
+
+    setIsLoggedIn(false);
+    setCurrentUserId(null);
+    setCartItems([]);
+    setUserAvatar("/images/placeholder.png");
+    setIsCartOpen(false);
+  };
+
+  // Handle cart updates from Header component
+  const handleCartUpdate = useCallback((newCartItems) => {
+    setCartItems(Array.isArray(newCartItems) ? newCartItems : []);
+  }, []);
+
+  // Listen for auth changes and clear cart events
   useEffect(() => {
-    localStorage.setItem("cart", JSON.stringify(cartItems));
-  }, [cartItems]);
+    const handleStorageChange = (e) => {
+      if (e.key === "token" || e.key === "user") {
+        checkAuthAndLoadUserData();
+      }
+    };
+
+    const handleClearCart = () => {
+      setCartItems([]);
+      localStorage.removeItem("cart");
+    };
+
+    if (typeof window !== "undefined") {
+      window.addEventListener("storage", handleStorageChange);
+      window.addEventListener("clearCart", handleClearCart);
+
+      return () => {
+        window.removeEventListener("storage", handleStorageChange);
+        window.removeEventListener("clearCart", handleClearCart);
+      };
+    }
+  }, []);
+
+  // Save cart to localStorage (only for guest users)
+  useEffect(() => {
+    if (typeof window !== "undefined" && !isLoggedIn) {
+      localStorage.setItem("cart", JSON.stringify(cartItems));
+    }
+  }, [cartItems, isLoggedIn]);
 
   // Add item to cart
   const handleAddToCart = useCallback(async (product) => {
@@ -141,6 +241,12 @@ export default function MainLayout({ children }) {
       setIsCartOpen(true);
     } catch (error) {
       console.error("Error adding to cart:", error);
+
+      if (error.message.includes("Authentication failed")) {
+        handleLogout();
+        return;
+      }
+
       alert("Failed to add to cart.");
     } finally {
       setIsLoading(false);
@@ -166,13 +272,13 @@ export default function MainLayout({ children }) {
       const token = localStorage.getItem("token");
       if (token) {
         try {
-          await updateCartItem(productId, {
-            quantity: newQuantity,
-            color,
-            size,
-          });
+          await updateCartItem(productId, newQuantity);
         } catch (error) {
           console.error("API quantity update failed:", error);
+
+          if (error.message.includes("Authentication failed")) {
+            handleLogout();
+          }
         }
       }
     },
@@ -194,6 +300,10 @@ export default function MainLayout({ children }) {
         await removeFromCart(productId);
       } catch (error) {
         console.error("API remove failed:", error);
+
+        if (error.message.includes("Authentication failed")) {
+          handleLogout();
+        }
       }
     }
   }, []);
@@ -205,24 +315,42 @@ export default function MainLayout({ children }) {
       window.location.href = "/login";
       return;
     }
+
     try {
+      setIsLoading(true);
       const response = await checkout();
       setCartItems([]);
       setIsCartOpen(false);
       localStorage.removeItem("cart");
-      // Optionally redirect to success page or order confirmation
       window.location.href = "/order-confirmation";
     } catch (error) {
       console.error("Checkout failed:", error);
-      // You could set an error state to display inline
-      // setCheckoutError(error.message || "Checkout failed");
+
+      if (error.message.includes("Authentication failed")) {
+        handleLogout();
+        return;
+      }
+
+      alert("Checkout failed. Please try again.");
+    } finally {
+      setIsLoading(false);
     }
   }, []);
 
-  const handleProfileClick = useCallback(() => {
+  const handleProfileClick = useCallback((logoutFn) => {
+    if (logoutFn) {
+      // This is a logout request
+      logoutFn();
+      return;
+    }
+
+    // Default profile behavior
     const token = localStorage.getItem("token");
-    if (!token) window.location.href = "/login";
-    else window.location.href = "/checkout";
+    if (!token) {
+      window.location.href = "/login";
+    } else {
+      window.location.href = "/profile";
+    }
   }, []);
 
   const cartItemCount = cartItems.reduce(
@@ -243,6 +371,7 @@ export default function MainLayout({ children }) {
         cartItemCount={cartItemCount}
         onCartClick={() => setIsCartOpen(true)}
         onProfileClick={handleProfileClick}
+        onCartUpdate={handleCartUpdate}
       />
 
       <main className="flex-1 pt-20">{childrenWithProps}</main>

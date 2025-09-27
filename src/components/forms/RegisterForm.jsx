@@ -1,392 +1,22 @@
-// "use client";
-
-// import React, { useState } from "react";
-// import Link from "next/link";
-// import Image from "next/image";
-// import AuthForm from "@/components/AuthForm";
-
-// /**
-//  * Register Form Component
-//  * @param {Object} props
-//  * @param {Function} props.onSubmit - Submit handler function
-//  * @param {boolean} props.isLoading - Loading state
-//  * @param {string} props.error - Error message from API
-//  */
-// const RegisterForm = ({ onSubmit, isLoading = false, error = "" }) => {
-//   // Form data state
-//   const [formData, setFormData] = useState({
-//     username: "",
-//     email: "",
-//     password: "",
-//     confirmPassword: "",
-//     avatar: null,
-//     avatarPreview: null,
-//   });
-
-//   // Validation errors state
-//   const [errors, setErrors] = useState({});
-
-//   // Password visibility toggles
-//   const [showPassword, setShowPassword] = useState(false);
-//   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-
-//   /**
-//    * Validate all form fields
-//    */
-//   const validateForm = () => {
-//     const newErrors = {};
-
-//     // Username validation (min 3 characters)
-//     if (!formData.username.trim()) {
-//       newErrors.username = "Username is required";
-//     } else if (formData.username.length < 3) {
-//       newErrors.username = "Username must be at least 3 characters";
-//     }
-
-//     // Email validation
-//     if (!formData.email.trim()) {
-//       newErrors.email = "Email is required";
-//     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-//       newErrors.email = "Please enter a valid email address";
-//     }
-
-//     // Password validation (min 3 characters per requirements)
-//     if (!formData.password) {
-//       newErrors.password = "Password is required";
-//     } else if (formData.password.length < 3) {
-//       newErrors.password = "Password must be at least 3 characters";
-//     }
-
-//     // Confirm password validation
-//     if (!formData.confirmPassword) {
-//       newErrors.confirmPassword = "Please confirm your password";
-//     } else if (formData.password !== formData.confirmPassword) {
-//       newErrors.confirmPassword = "Passwords do not match";
-//     }
-
-//     setErrors(newErrors);
-//     return Object.keys(newErrors).length === 0;
-//   };
-
-//   /**
-//    * Handle input field changes
-//    */
-//   const handleInputChange = (e) => {
-//     const { name, value } = e.target;
-
-//     setFormData((prev) => ({
-//       ...prev,
-//       [name]: value,
-//     }));
-
-//     // Clear error for this field when user types
-//     if (errors[name]) {
-//       setErrors((prev) => ({
-//         ...prev,
-//         [name]: "",
-//       }));
-//     }
-
-//     // Re-validate confirm password when password changes
-//     if (name === "password" && formData.confirmPassword) {
-//       if (value !== formData.confirmPassword) {
-//         setErrors((prev) => ({
-//           ...prev,
-//           confirmPassword: "Passwords do not match",
-//         }));
-//       } else {
-//         setErrors((prev) => ({
-//           ...prev,
-//           confirmPassword: "",
-//         }));
-//       }
-//     }
-//   };
-
-//   /**
-//    * Handle avatar file selection
-//    */
-//   const handleAvatarChange = (e) => {
-//     const file = e.target.files?.[0];
-
-//     if (file) {
-//       // Validate file type (images only)
-//       if (!file.type.startsWith("image/")) {
-//         setErrors((prev) => ({
-//           ...prev,
-//           avatar: "Please select an image file",
-//         }));
-//         return;
-//       }
-
-//       // Create preview URL
-//       const previewUrl = URL.createObjectURL(file);
-
-//       setFormData((prev) => ({
-//         ...prev,
-//         avatar: file,
-//         avatarPreview: previewUrl,
-//       }));
-
-//       // Clear avatar error
-//       setErrors((prev) => ({
-//         ...prev,
-//         avatar: "",
-//       }));
-//     }
-//   };
-
-//   /**
-//    * Handle form submission
-//    */
-//   const handleSubmit = (e) => {
-//     e.preventDefault();
-
-//     if (!validateForm()) {
-//       return;
-//     }
-
-//     // Prepare form data for API
-//     const submitData = new FormData();
-//     submitData.append("username", formData.username);
-//     submitData.append("email", formData.email);
-//     submitData.append("password", formData.password);
-//     submitData.append("password_confirmation", formData.confirmPassword);
-
-//     if (formData.avatar) {
-//       submitData.append("avatar", formData.avatar);
-//     }
-
-//     onSubmit?.(submitData);
-//   };
-
-//   return (
-//     <div className="min-h-screen bg-gray-50 flex">
-//       {/* Left Side - Hero Image */}
-//       <div className="hidden lg:block lg:w-1/2 relative">
-//         <Image
-//           src="/images/login-hero.webp"
-//           alt="Hero"
-//           fill
-//           className="object-cover"
-//           priority
-//         />
-//       </div>
-
-//       {/* Right Side - Register Form */}
-//       <div className="flex-1 flex items-center justify-center px-6 py-12">
-//         <div className="w-full max-w-md">
-//           <h1 className="text-3xl font-bold text-gray-900 mb-8">Register</h1>
-
-//           <form onSubmit={handleSubmit} className="space-y-6">
-//             {/* Username Field */}
-//             <div>
-//               <label
-//                 htmlFor="username"
-//                 className="block text-sm font-medium text-gray-700 mb-1"
-//               >
-//                 Username <span className="text-red-500">*</span>
-//               </label>
-//               <input
-//                 id="username"
-//                 name="username"
-//                 type="text"
-//                 value={formData.username}
-//                 onChange={handleInputChange}
-//                 className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 ${
-//                   errors.username ? "border-red-500" : "border-gray-300"
-//                 }`}
-//                 disabled={isLoading}
-//               />
-//               {errors.username && (
-//                 <p className="mt-1 text-sm text-red-600">{errors.username}</p>
-//               )}
-//             </div>
-
-//             {/* Email Field */}
-//             <div>
-//               <label
-//                 htmlFor="email"
-//                 className="block text-sm font-medium text-gray-700 mb-1"
-//               >
-//                 Email <span className="text-red-500">*</span>
-//               </label>
-//               <input
-//                 id="email"
-//                 name="email"
-//                 type="email"
-//                 value={formData.email}
-//                 onChange={handleInputChange}
-//                 className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 ${
-//                   errors.email ? "border-red-500" : "border-gray-300"
-//                 }`}
-//                 disabled={isLoading}
-//               />
-//               {errors.email && (
-//                 <p className="mt-1 text-sm text-red-600">{errors.email}</p>
-//               )}
-//             </div>
-
-//             {/* Password Field */}
-//             <div>
-//               <label
-//                 htmlFor="password"
-//                 className="block text-sm font-medium text-gray-700 mb-1"
-//               >
-//                 Password <span className="text-red-500">*</span>
-//               </label>
-//               <div className="relative">
-//                 <input
-//                   id="password"
-//                   name="password"
-//                   type={showPassword ? "text" : "password"}
-//                   value={formData.password}
-//                   onChange={handleInputChange}
-//                   className={`w-full px-3 py-2 pr-10 border rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 ${
-//                     errors.password ? "border-red-500" : "border-gray-300"
-//                   }`}
-//                   disabled={isLoading}
-//                 />
-//                 <button
-//                   type="button"
-//                   onClick={() => setShowPassword(!showPassword)}
-//                   className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-gray-500 hover:text-gray-700"
-//                   disabled={isLoading}
-//                 >
-//                   {showPassword ? "Hide" : "Show"}
-//                 </button>
-//               </div>
-//               {errors.password && (
-//                 <p className="mt-1 text-sm text-red-600">{errors.password}</p>
-//               )}
-//             </div>
-
-//             {/* Confirm Password Field */}
-//             <div>
-//               <label
-//                 htmlFor="confirmPassword"
-//                 className="block text-sm font-medium text-gray-700 mb-1"
-//               >
-//                 Confirm Password <span className="text-red-500">*</span>
-//               </label>
-//               <div className="relative">
-//                 <input
-//                   id="confirmPassword"
-//                   name="confirmPassword"
-//                   type={showConfirmPassword ? "text" : "password"}
-//                   value={formData.confirmPassword}
-//                   onChange={handleInputChange}
-//                   className={`w-full px-3 py-2 pr-10 border rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 ${
-//                     errors.confirmPassword
-//                       ? "border-red-500"
-//                       : "border-gray-300"
-//                   }`}
-//                   disabled={isLoading}
-//                 />
-//                 <button
-//                   type="button"
-//                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-//                   className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-gray-500 hover:text-gray-700"
-//                   disabled={isLoading}
-//                 >
-//                   {showConfirmPassword ? "Hide" : "Show"}
-//                 </button>
-//               </div>
-//               {errors.confirmPassword && (
-//                 <p className="mt-1 text-sm text-red-600">
-//                   {errors.confirmPassword}
-//                 </p>
-//               )}
-//             </div>
-
-//             {/* Avatar Field (Optional) */}
-//             <div>
-//               <label
-//                 htmlFor="avatar"
-//                 className="block text-sm font-medium text-gray-700 mb-1"
-//               >
-//                 Avatar (optional)
-//               </label>
-//               <input
-//                 id="avatar"
-//                 name="avatar"
-//                 type="file"
-//                 accept="image/*"
-//                 onChange={handleAvatarChange}
-//                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
-//                 disabled={isLoading}
-//               />
-//               {errors.avatar && (
-//                 <p className="mt-1 text-sm text-red-600">{errors.avatar}</p>
-//               )}
-
-//               {/* Avatar Preview */}
-//               {formData.avatarPreview && (
-//                 <div className="mt-3">
-//                   <p className="text-sm text-gray-600 mb-2">Preview:</p>
-//                   <Image
-//                     src={formData.avatarPreview}
-//                     alt="Avatar preview"
-//                     width={80}
-//                     height={80}
-//                     className="rounded-full object-cover border-2 border-gray-200"
-//                   />
-//                 </div>
-//               )}
-//             </div>
-
-//             {/* API Error Message */}
-//             {error && (
-//               <div className="bg-red-50 border border-red-200 rounded-lg p-3">
-//                 <p className="text-sm text-red-600">{error}</p>
-//               </div>
-//             )}
-
-//             {/* Submit Button */}
-//             <button
-//               type="submit"
-//               disabled={isLoading}
-//               className="w-full bg-red-500 hover:bg-red-600 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-medium py-2 px-4 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
-//             >
-//               {isLoading ? (
-//                 <span className="flex items-center justify-center gap-2">
-//                   <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-//                   Creating account...
-//                 </span>
-//               ) : (
-//                 "Create Account"
-//               )}
-//             </button>
-
-//             {/* Login Link */}
-//             <div className="text-center">
-//               <span className="text-sm text-gray-600">
-//                 Already have an account?{" "}
-//                 <Link
-//                   href="/login"
-//                   className="text-red-500 hover:text-red-600 font-medium"
-//                 >
-//                   Log in
-//                 </Link>
-//               </span>
-//             </div>
-//           </form>
-//         </div>
-//       </div>
-//     </div>
-//   );
-// };
-
-// export default RegisterForm;
-
 "use client";
 
 import React, { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { register } from "@/services/api"; // import service
+import { useRouter } from "next/navigation";
+import { register } from "@/services/api";
 
 const RegisterForm = () => {
+  const getTextWidth = (text, font) => {
+    if (typeof window === "undefined") return 0;
+    const canvas = document.createElement("canvas");
+    const context = canvas.getContext("2d");
+    context.font = font;
+    return context.measureText(text).width;
+  };
+
+  const router = useRouter();
+
   const [formData, setFormData] = useState({
     username: "",
     email: "",
@@ -401,62 +31,31 @@ const RegisterForm = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  /** Validate all form fields */
+  /** Validate form */
   const validateForm = () => {
     const newErrors = {};
-
-    if (!formData.username.trim()) {
-      newErrors.username = "Username is required";
-    } else if (formData.username.length < 3) {
-      newErrors.username = "Username must be at least 3 characters";
-    }
-
-    if (!formData.email.trim()) {
-      newErrors.email = "Email is required";
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      newErrors.email = "Please enter a valid email address";
-    }
-
-    if (!formData.password) {
-      newErrors.password = "Password is required";
-    } else if (formData.password.length < 3) {
-      newErrors.password = "Password must be at least 3 characters";
-    }
-
-    if (!formData.confirmPassword) {
+    if (!formData.username.trim()) newErrors.username = "Username is required";
+    if (!formData.email.trim()) newErrors.email = "Email is required";
+    if (!formData.password) newErrors.password = "Password is required";
+    if (!formData.confirmPassword)
       newErrors.confirmPassword = "Please confirm your password";
-    } else if (formData.password !== formData.confirmPassword) {
+    if (formData.password !== formData.confirmPassword)
       newErrors.confirmPassword = "Passwords do not match";
-    }
-
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  /** Handle input changes */
+  /** Handle input */
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
-
     if (errors[name]) setErrors((prev) => ({ ...prev, [name]: "" }));
     if (apiError) setApiError("");
-
-    if (name === "password" && formData.confirmPassword) {
-      if (value !== formData.confirmPassword) {
-        setErrors((prev) => ({
-          ...prev,
-          confirmPassword: "Passwords do not match",
-        }));
-      } else {
-        setErrors((prev) => ({ ...prev, confirmPassword: "" }));
-      }
-    }
   };
 
-  /** Handle avatar selection */
+  /** Avatar upload */
   const handleAvatarChange = (e) => {
     const file = e.target.files?.[0];
-
     if (file) {
       if (!file.type.startsWith("image/")) {
         setErrors((prev) => ({
@@ -465,21 +64,23 @@ const RegisterForm = () => {
         }));
         return;
       }
-
-      const previewUrl = URL.createObjectURL(file);
       setFormData((prev) => ({
         ...prev,
         avatar: file,
-        avatarPreview: previewUrl,
+        avatarPreview: URL.createObjectURL(file),
       }));
       setErrors((prev) => ({ ...prev, avatar: "" }));
     }
   };
 
-  /** Handle form submission */
+  const removeAvatar = () => {
+    setFormData((prev) => ({ ...prev, avatar: null, avatarPreview: null }));
+  };
+
+  /** Submit */
+  /** Submit */
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     if (!validateForm()) return;
 
     const submitData = new FormData();
@@ -493,9 +94,14 @@ const RegisterForm = () => {
     setApiError("");
 
     try {
-      await register(submitData); // call authService register
-      // Redirect to login after successful registration
-      window.location.href = "/login";
+      // Clear any existing cart state before registration
+      if (typeof window !== "undefined") {
+        // Dispatch custom event to clear cart
+        window.dispatchEvent(new CustomEvent("clearCart"));
+      }
+
+      await register(submitData);
+      router.push("/login");
     } catch (err) {
       setApiError(err.message || "Registration failed");
       if (err.errors) setErrors(err.errors);
@@ -506,7 +112,7 @@ const RegisterForm = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
-      {/* Left Side - Hero Image */}
+      {/* Left Hero */}
       <div className="hidden lg:block lg:w-1/2 relative">
         <Image
           src="/images/login-hero.webp"
@@ -517,179 +123,313 @@ const RegisterForm = () => {
         />
       </div>
 
-      {/* Right Side - Register Form */}
-      <div className="flex-1 flex items-center justify-center px-6 py-12">
-        <div className="w-full max-w-md">
-          <h1 className="text-3xl font-bold text-gray-900 mb-8">Register</h1>
+      {/* Right Form */}
+      <div className="flex-1 flex items-center justify-center px-8 py-12">
+        <div className="w-full max-w-[554px]">
+          <h1
+            className="text-[42px] leading-[63px] font-semibold mb-12"
+            style={{ fontFamily: "'Poppins', sans-serif", color: "#10151F" }}
+          >
+            Registration
+          </h1>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Username */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Username <span className="text-red-500">*</span>
-              </label>
-              <input
-                name="username"
-                type="text"
-                value={formData.username}
-                onChange={handleInputChange}
-                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 ${
-                  errors.username ? "border-red-500" : "border-gray-300"
-                }`}
-                disabled={isLoading}
-              />
-              {errors.username && (
-                <p className="mt-1 text-sm text-red-600">{errors.username}</p>
+          <form onSubmit={handleSubmit} className="space-y-12">
+            {/* Avatar Upload */}
+            <div className="flex items-center gap-[15px]">
+              <div className="flex items-center gap-[15px] group">
+                <div className="relative">
+                  <label className="cursor-pointer">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleAvatarChange}
+                      className="hidden"
+                      disabled={isLoading}
+                    />
+                    {formData.avatarPreview ? (
+                      <Image
+                        src={formData.avatarPreview}
+                        alt="Avatar"
+                        width={100}
+                        height={100}
+                        className="w-[100px] h-[100px] rounded-full object-cover group-hover:opacity-80 transition-opacity"
+                      />
+                    ) : (
+                      <div className="w-[100px] h-[100px] rounded-full bg-gray-200 flex items-center justify-center group-hover:bg-gray-300 transition-colors">
+                        <svg
+                          width="40"
+                          height="40"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="#9CA3AF"
+                          strokeWidth="2"
+                        >
+                          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                          <circle cx="12" cy="7" r="4" />
+                        </svg>
+                      </div>
+                    )}
+                  </label>
+                </div>
+                <label className="cursor-pointer">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleAvatarChange}
+                    className="hidden"
+                    disabled={isLoading}
+                  />
+                  <span
+                    className="text-[14px] leading-[21px] text-[#3E424A] group-hover:text-[#FF4000] transition-colors"
+                    style={{ fontFamily: "'Poppins', sans-serif" }}
+                  >
+                    Upload new
+                  </span>
+                </label>
+              </div>
+              {formData.avatarPreview && (
+                <button
+                  type="button"
+                  onClick={removeAvatar}
+                  disabled={isLoading}
+                  className="text-[14px] leading-[21px] text-[#3E424A] hover:text-[#FF4000] cursor-pointer transition-colors"
+                  style={{ fontFamily: "'Poppins', sans-serif" }}
+                >
+                  Remove
+                </button>
               )}
             </div>
 
-            {/* Email */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Email <span className="text-red-500">*</span>
-              </label>
-              <input
-                name="email"
-                type="email"
-                value={formData.email}
-                onChange={handleInputChange}
-                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 ${
-                  errors.email ? "border-red-500" : "border-gray-300"
-                }`}
-                disabled={isLoading}
-              />
-              {errors.email && (
-                <p className="mt-1 text-sm text-red-600">{errors.email}</p>
-              )}
-            </div>
+            {/* Inputs */}
+            <div className="flex flex-col gap-[24px]">
+              {/* Username */}
+              <div className="relative">
+                <input
+                  name="username"
+                  type="text"
+                  placeholder="Username"
+                  value={formData.username}
+                  onChange={handleInputChange}
+                  disabled={isLoading}
+                  className={`w-full h-[42px] px-3 border rounded-lg text-[14px] leading-[21px] placeholder-[#3E424A] ${
+                    errors.username ? "border-red-500" : "border-[#E1DFE1]"
+                  }`}
+                  style={{ fontFamily: "'Poppins', sans-serif" }}
+                />
 
-            {/* Password */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Password <span className="text-red-500">*</span>
-              </label>
+                {/* Asterisk that disappears when user types */}
+                {!formData.username && (
+                  <span
+                    className="absolute top-1/2 -translate-y-1/2 text-[#FF4000] pointer-events-none text-[14px]"
+                    style={{
+                      fontFamily: "'Poppins', sans-serif",
+                      left: `calc(12px + ${getTextWidth(
+                        "Username",
+                        "14px Poppins"
+                      )}px + 4px)`,
+                    }}
+                  >
+                    *
+                  </span>
+                )}
+
+                {errors.username && (
+                  <p className="text-sm text-[#FF4000]">{errors.username}</p>
+                )}
+              </div>
+
+              {/* Email */}
+              <div className="relative">
+                <input
+                  name="email"
+                  type="email"
+                  placeholder="Email"
+                  value={formData.email}
+                  onChange={handleInputChange}
+                  disabled={isLoading}
+                  className={`w-full h-[42px] px-3 border rounded-lg text-[14px] leading-[21px] placeholder-[#3E424A] ${
+                    errors.email ? "border-red-500" : "border-[#E1DFE1]"
+                  }`}
+                  style={{ fontFamily: "'Poppins', sans-serif" }}
+                />
+
+                {/* Asterisk that disappears when user types */}
+                {!formData.email && (
+                  <span
+                    className="absolute top-1/2 -translate-y-1/2 text-[#FF4000] pointer-events-none text-[14px]"
+                    style={{
+                      fontFamily: "'Poppins', sans-serif",
+                      left: `calc(12px + ${getTextWidth(
+                        "Email",
+                        "14px Poppins"
+                      )}px + 4px)`,
+                    }}
+                  >
+                    *
+                  </span>
+                )}
+
+                {errors.email && (
+                  <p className="text-sm text-[#FF4000]">{errors.email}</p>
+                )}
+              </div>
+
+              {/* Password */}
               <div className="relative">
                 <input
                   name="password"
                   type={showPassword ? "text" : "password"}
+                  placeholder="Password"
                   value={formData.password}
                   onChange={handleInputChange}
-                  className={`w-full px-3 py-2 pr-10 border rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 ${
-                    errors.password ? "border-red-500" : "border-gray-300"
-                  }`}
                   disabled={isLoading}
+                  className={`w-full h-[42px] px-3 border rounded-lg text-[14px] leading-[21px] placeholder-[#3E424A] ${
+                    errors.password ? "border-red-500" : "border-[#E1DFE1]"
+                  }`}
+                  style={{ fontFamily: "'Poppins', sans-serif" }}
                 />
+
+                {/* Asterisk that disappears when user types */}
+                {!formData.password && (
+                  <span
+                    className="absolute top-1/2 -translate-y-1/2 text-[#FF4000] pointer-events-none text-[14px]"
+                    style={{
+                      fontFamily: "'Poppins', sans-serif",
+                      left: `calc(12px + ${getTextWidth(
+                        "Password",
+                        "14px Poppins"
+                      )}px + 4px)`,
+                    }}
+                  >
+                    *
+                  </span>
+                )}
+
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-gray-500 hover:text-gray-700"
-                  disabled={isLoading}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-600 cursor-pointer"
                 >
-                  {showPassword ? "Hide" : "Show"}
+                  <svg
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                  >
+                    {showPassword ? (
+                      <>
+                        <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
+                        <line x1="1" y1="1" x2="23" y2="23" />
+                      </>
+                    ) : (
+                      <>
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                        <circle cx="12" cy="12" r="3" />
+                      </>
+                    )}
+                  </svg>
                 </button>
-              </div>
-              {errors.password && (
-                <p className="mt-1 text-sm text-red-600">{errors.password}</p>
-              )}
-            </div>
 
-            {/* Confirm Password */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Confirm Password <span className="text-red-500">*</span>
-              </label>
+                {errors.password && (
+                  <p className="text-sm text-[#FF4000]">{errors.password}</p>
+                )}
+              </div>
+
+              {/* Confirm Password */}
               <div className="relative">
                 <input
                   name="confirmPassword"
                   type={showConfirmPassword ? "text" : "password"}
+                  placeholder="Confirm Password"
                   value={formData.confirmPassword}
                   onChange={handleInputChange}
-                  className={`w-full px-3 py-2 pr-10 border rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 ${
+                  disabled={isLoading}
+                  className={`w-full h-[42px] px-3 border rounded-lg text-[14px] leading-[21px] placeholder-[#3E424A] ${
                     errors.confirmPassword
                       ? "border-red-500"
-                      : "border-gray-300"
+                      : "border-[#E1DFE1]"
                   }`}
-                  disabled={isLoading}
+                  style={{ fontFamily: "'Poppins', sans-serif" }}
                 />
+
+                {/* Asterisk that disappears when user types */}
+                {!formData.confirmPassword && (
+                  <span
+                    className="absolute top-1/2 -translate-y-1/2 text-[#FF4000] pointer-events-none text-[14px]"
+                    style={{
+                      fontFamily: "'Poppins', sans-serif",
+                      left: `calc(12px + ${getTextWidth(
+                        "Confirm Password",
+                        "14px Poppins"
+                      )}px + 4px)`,
+                    }}
+                  >
+                    *
+                  </span>
+                )}
+
                 <button
                   type="button"
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-gray-500 hover:text-gray-700"
-                  disabled={isLoading}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-600 cursor-pointer"
                 >
-                  {showConfirmPassword ? "Hide" : "Show"}
+                  <svg
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                  >
+                    {showConfirmPassword ? (
+                      <>
+                        <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
+                        <line x1="1" y1="1" x2="23" y2="23" />
+                      </>
+                    ) : (
+                      <>
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                        <circle cx="12" cy="12" r="3" />
+                      </>
+                    )}
+                  </svg>
                 </button>
-              </div>
-              {errors.confirmPassword && (
-                <p className="mt-1 text-sm text-red-600">
-                  {errors.confirmPassword}
-                </p>
-              )}
-            </div>
 
-            {/* Avatar */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Avatar (optional)
-              </label>
-              <input
-                type="file"
-                accept="image/*"
-                onChange={handleAvatarChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
-                disabled={isLoading}
-              />
-              {errors.avatar && (
-                <p className="mt-1 text-sm text-red-600">{errors.avatar}</p>
-              )}
-              {formData.avatarPreview && (
-                <div className="mt-3">
-                  <p className="text-sm text-gray-600 mb-2">Preview:</p>
-                  <Image
-                    src={formData.avatarPreview}
-                    alt="Avatar preview"
-                    width={80}
-                    height={80}
-                    className="rounded-full object-cover border-2 border-gray-200"
-                  />
-                </div>
-              )}
+                {errors.confirmPassword && (
+                  <p className="text-sm text-[#FF4000]">
+                    {errors.confirmPassword}
+                  </p>
+                )}
+              </div>
             </div>
 
             {/* API Error */}
             {apiError && (
               <div className="bg-red-50 border border-red-200 rounded-lg p-3">
-                <p className="text-sm text-red-600">{apiError}</p>
+                <p className="text-sm text-[#FF4000]">{apiError}</p>
               </div>
             )}
 
-            {/* Submit Button */}
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="w-full bg-red-500 hover:bg-red-600 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-medium py-2 px-4 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
-            >
-              {isLoading ? (
-                <span className="flex items-center justify-center gap-2">
-                  <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  Creating account...
-                </span>
-              ) : (
-                "Create Account"
-              )}
-            </button>
-
-            {/* Login Link */}
-            <div className="text-center">
-              <span className="text-sm text-gray-600">
-                Already have an account?{" "}
+            {/* Actions */}
+            <div className="flex flex-col items-center gap-[24px]">
+              <button
+                type="submit"
+                disabled={isLoading}
+                className="w-full h-[52px] bg-[#FF4000] text-white text-[16px] leading-[24px] font-semibold rounded-lg hover:bg-[#e63900] disabled:opacity-70 cursor-pointer"
+              >
+                {isLoading ? "Registering..." : "Register"}
+              </button>
+              <p className="text-[14px] text-[#3E424A]">
+                Already member?{" "}
                 <Link
                   href="/login"
-                  className="text-red-500 hover:text-red-600 font-medium"
+                  className="text-[#FF4000] hover:underline font-medium"
                 >
                   Log in
                 </Link>
-              </span>
+              </p>
             </div>
           </form>
         </div>
