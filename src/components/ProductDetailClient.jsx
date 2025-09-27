@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useMemo } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import Image from "next/image";
 import { addToCart as addToCartAPI } from "@/services/api";
 import { toast, Bounce } from "react-toastify";
@@ -15,6 +15,7 @@ export default function ProductDetailClient({ product, onAddToCart }) {
   );
   const [quantity, setQuantity] = useState(1);
   const [isImageLoading, setIsImageLoading] = useState(false);
+  const [isAddingToCart, setIsAddingToCart] = useState(false);
 
   const selectedImage = useMemo(
     () => product?.images?.[selectedImageIndex] || product?.cover_image,
@@ -43,57 +44,84 @@ export default function ProductDetailClient({ product, onAddToCart }) {
     [product]
   );
 
+  // Dispatch cart update event to notify other components
+  const dispatchCartUpdate = useCallback(() => {
+    // Trigger a cart refresh in the header by dispatching a custom event
+    window.dispatchEvent(new CustomEvent("cartRefreshNeeded"));
+  }, []);
+
   const handleAddToCart = useCallback(async () => {
-    if (!product) return;
+    if (!product || isAddingToCart) return;
+
+    setIsAddingToCart(true);
 
     try {
-      // Call the backend API
+      // Create the cart item data
+      const cartItemData = {
+        id: product.id,
+        name: product.name,
+        price: product.price,
+        cover_image: selectedImage,
+        image: selectedImage, // Fallback for compatibility
+        color: selectedColor,
+        size: selectedSize,
+        quantity,
+        brand: product.brand?.name || "Unknown",
+        brandLogo: product.brand?.image || null,
+        total_price: product.price * quantity,
+      };
+
+      // Call the backend API first
       await addToCartAPI(product.id, {
         quantity,
         color: selectedColor,
         size: selectedSize,
       });
 
-      // Update local cart state if provided
+      // Update local cart state if onAddToCart callback is provided
       if (onAddToCart) {
-        onAddToCart({
-          id: product.id,
-          name: product.name,
-          price: product.price,
-          image: selectedImage,
-          color: selectedColor,
-          size: selectedSize,
-          quantity,
-          brand: product.brand?.name || "Unknown",
-          brandLogo: product.brand?.image || null,
-        });
+        onAddToCart(cartItemData);
       }
 
-      // Reset quantity
+      // Dispatch event to trigger cart refresh in header
+      dispatchCartUpdate();
+
+      // Reset quantity to 1 after successful add
       setQuantity(1);
 
-      // Show toast
+      // Show success toast
       toast.success("Product added to cart!", {
         position: "top-center",
-        autoClose: 500,
+        autoClose: 1000,
         hideProgressBar: false,
-        closeOnClick: false,
+        closeOnClick: true,
         pauseOnHover: true,
         draggable: true,
         progress: undefined,
         theme: "light",
         transition: Bounce,
       });
-
-      // Reload after toast disappears
-      setTimeout(() => {
-        window.location.reload();
-      }, 2000);
     } catch (err) {
-      console.error(err);
-      toast.error("Failed to add product to cart.", {
+      console.error("Failed to add product to cart:", err);
+
+      // Show error toast with more specific error message
+      const errorMessage =
+        err.response?.data?.message ||
+        err.message ||
+        "Failed to add product to cart.";
+      toast.error(errorMessage, {
         position: "top-center",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "light",
+        transition: Bounce,
       });
+    } finally {
+      setIsAddingToCart(false);
     }
   }, [
     product,
@@ -102,6 +130,8 @@ export default function ProductDetailClient({ product, onAddToCart }) {
     selectedSize,
     selectedImage,
     onAddToCart,
+    dispatchCartUpdate,
+    isAddingToCart,
   ]);
 
   useEffect(() => {
@@ -292,6 +322,7 @@ export default function ProductDetailClient({ product, onAddToCart }) {
                   value={quantity}
                   onChange={(e) => setQuantity(parseInt(e.target.value))}
                   className="appearance-none w-full h-[42px] px-4 py-[9px] border border-[#E1DFE1] rounded-[10px] text-[#10151F] font-[Poppins] font-normal text-[16px] leading-[24px] opacity-80 bg-transparent focus:outline-none"
+                  disabled={isAddingToCart}
                 >
                   {Array.from({ length: 10 }, (_, i) => i + 1).map((num) => (
                     <option key={num} value={num}>
@@ -322,19 +353,31 @@ export default function ProductDetailClient({ product, onAddToCart }) {
               </div>
             </div>
 
-            {/* Add to Cart */}
+            {/* Add to Cart Button */}
             <button
               onClick={handleAddToCart}
-              className="w-full px-6 py-4 bg-[#FF4000] text-white rounded-lg font-medium hover:bg-[#E63600] cursor-pointer mt-14"
+              disabled={isAddingToCart}
+              className={`w-full px-6 py-4 rounded-lg font-medium mt-14 cursor-pointer transition-all duration-200 ${
+                isAddingToCart
+                  ? "bg-gray-400 text-gray-700 cursor-not-allowed"
+                  : "bg-[#FF4000] text-white hover:bg-[#E63600]"
+              }`}
             >
-              Add to cart
+              {isAddingToCart ? (
+                <div className="flex items-center justify-center gap-2">
+                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  <span>Adding to cart...</span>
+                </div>
+              ) : (
+                "Add to cart"
+              )}
             </button>
 
             <div className="w-full h-px bg-gray-300 my-14"></div>
 
             {/* Details with Brand */}
-            <div className="flex flex-col w-[704px] gap-7">
-              <div className="flex justify-between items-center w-[704px] h-[61px]">
+            <div className="flex flex-col w-full max-w-[704px] gap-7">
+              <div className="flex justify-between items-center w-full h-[61px]">
                 <h2 className="text-[20px] font-medium text-[#10151F] leading-[30px]">
                   Details
                 </h2>
