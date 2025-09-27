@@ -202,19 +202,20 @@ export default function MainLayout({ children }) {
   const handleCheckout = useCallback(async () => {
     const token = localStorage.getItem("token");
     if (!token) {
-      alert("Please login to checkout");
       window.location.href = "/login";
       return;
     }
     try {
       const response = await checkout();
-      alert(response.message || "Checkout successful!");
       setCartItems([]);
       setIsCartOpen(false);
       localStorage.removeItem("cart");
+      // Optionally redirect to success page or order confirmation
+      window.location.href = "/order-confirmation";
     } catch (error) {
       console.error("Checkout failed:", error);
-      alert(error.message || "Checkout failed");
+      // You could set an error state to display inline
+      // setCheckoutError(error.message || "Checkout failed");
     }
   }, []);
 
