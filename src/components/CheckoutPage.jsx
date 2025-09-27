@@ -144,38 +144,43 @@ const CheckoutPage = () => {
 
   // Update quantity
   const updateQuantity = useCallback(
-    async (itemId, change) => {
+    async (itemId, change, color, size) => {
       if (!state.mounted) return;
 
-      const item = state.cartItems.find((i) => i.id === itemId);
+      const item = state.cartItems.find(
+        (i) =>
+          i.id === itemId &&
+          (i.color ?? "") === (color ?? "") &&
+          (i.size ?? "") === (size ?? "")
+      );
       if (!item) return;
 
       const newQuantity = Math.max(1, item.quantity + change);
 
-      // Optimistic update
-      const updatedItems = state.cartItems.map((cartItem) =>
-        cartItem.id === itemId
-          ? { ...cartItem, quantity: newQuantity }
-          : cartItem
-      );
+      const updatedItems = state.cartItems.map((cartItem) => {
+        if (
+          cartItem.id === itemId &&
+          (cartItem.color ?? "") === (color ?? "") &&
+          (cartItem.size ?? "") === (size ?? "")
+        ) {
+          return { ...cartItem, quantity: newQuantity };
+        }
+        return cartItem;
+      });
 
       updateState({ cartItems: updatedItems });
       localStorage.setItem(
         STORAGE_KEYS.CART_ITEMS,
         JSON.stringify(updatedItems)
       );
-
-      // Dispatch event to update header cart count
       dispatchCartUpdate(updatedItems);
 
-      // API update for authenticated users
       const token = localStorage.getItem(STORAGE_KEYS.TOKEN);
       if (token) {
         try {
-          await updateCartItem(itemId, newQuantity);
+          await updateCartItem(itemId, newQuantity, { color, size });
         } catch (error) {
           console.error("Error updating quantity:", error);
-          // Revert on failure
           await loadInitialData();
         }
       }
@@ -191,28 +196,31 @@ const CheckoutPage = () => {
 
   // Remove item
   const removeItem = useCallback(
-    async (itemId) => {
+    async (itemId, color, size) => {
       if (!state.mounted) return;
 
-      // Optimistic update
-      const updatedItems = state.cartItems.filter((item) => item.id !== itemId);
+      const updatedItems = state.cartItems.filter(
+        (item) =>
+          !(
+            item.id === itemId &&
+            (item.color ?? "") === (color ?? "") &&
+            (item.size ?? "") === (size ?? "")
+          )
+      );
+
       updateState({ cartItems: updatedItems });
       localStorage.setItem(
         STORAGE_KEYS.CART_ITEMS,
         JSON.stringify(updatedItems)
       );
-
-      // Dispatch event to update header cart count
       dispatchCartUpdate(updatedItems);
 
-      // API update for authenticated users
       const token = localStorage.getItem(STORAGE_KEYS.TOKEN);
       if (token) {
         try {
-          await removeFromCart(itemId);
+          await removeFromCart(itemId, { color, size });
         } catch (error) {
           console.error("Error removing item:", error);
-          // Revert on failure
           await loadInitialData();
         }
       }
@@ -548,7 +556,9 @@ const OrderSummary = ({
       {cartItems.length > 0 ? (
         cartItems.map((item, index) => (
           <CartItem
-            key={`${item.id}-${index}`}
+            key={`${item.id}-${item.color || "no-color"}-${
+              item.size || "no-size"
+            }-${index}`}
             item={item}
             isLoading={isLoading}
             onUpdateQuantity={onUpdateQuantity}
@@ -629,13 +639,17 @@ const CartItem = ({ item, isLoading, onUpdateQuantity, onRemove }) => (
       <div className="flex justify-between items-center gap-[13px]">
         <QuantityControl
           quantity={item.quantity}
-          onDecrease={() => onUpdateQuantity(item.id, -1)}
-          onIncrease={() => onUpdateQuantity(item.id, 1)}
+          onDecrease={() =>
+            onUpdateQuantity(item.id, -1, item.color, item.size)
+          }
+          onIncrease={() =>
+            onUpdateQuantity(item.id, +1, item.color, item.size)
+          }
           disabled={isLoading}
         />
         <button
           type="button"
-          onClick={() => onRemove(item.id)}
+          onClick={() => onRemove(item.id, item.color, item.size)}
           disabled={isLoading}
           className="text-[12px] font-normal text-[#3E424A] leading-[18px] opacity-80 hover:opacity-100 disabled:opacity-50 w-[49px] text-right cursor-pointer"
         >

@@ -59,22 +59,29 @@ const CartSideBar = ({
   }, [items]);
 
   const handleQuantityChange = useCallback(
-    async (productId, newQuantity) => {
+    async (productId, newQuantity, color, size) => {
       if (newQuantity < 1 || isLoading) return;
 
       setIsLoading(true);
 
-      // Optimistically update local state
-      const updatedItems = items.map((item) =>
-        item.id === productId ? { ...item, quantity: newQuantity } : item
-      );
+      // Optimistically update local state with proper item identification
+      const updatedItems = items.map((item) => {
+        if (
+          item.id === productId &&
+          (item.color || "") === (color || "") &&
+          (item.size || "") === (size || "")
+        ) {
+          return { ...item, quantity: newQuantity };
+        }
+        return item;
+      });
       setItems(updatedItems);
 
       // Dispatch event to update header cart count immediately
       dispatchCartUpdate(updatedItems);
 
       try {
-        await onUpdateQuantity(productId, newQuantity);
+        await onUpdateQuantity(productId, newQuantity, color, size);
       } catch (error) {
         console.error("Failed to update quantity:", error);
         // Revert local state on error
@@ -88,20 +95,26 @@ const CartSideBar = ({
   );
 
   const handleRemoveItem = useCallback(
-    async (productId) => {
+    async (productId, color, size) => {
       if (isLoading) return;
 
       setIsLoading(true);
 
-      // Optimistically update local state
-      const updatedItems = items.filter((item) => item.id !== productId);
+      // Optimistically update local state with proper item identification
+      const updatedItems = items.filter((item) => {
+        return !(
+          item.id === productId &&
+          (item.color || "") === (color || "") &&
+          (item.size || "") === (size || "")
+        );
+      });
       setItems(updatedItems);
 
       // Dispatch event to update header cart count immediately
       dispatchCartUpdate(updatedItems);
 
       try {
-        await onRemoveItem(productId);
+        await onRemoveItem(productId, color, size);
       } catch (error) {
         console.error("Failed to remove item:", error);
         // Revert local state on error
@@ -155,9 +168,11 @@ const CartSideBar = ({
             <>
               {/* Cart Items - Scrollable */}
               <div className="flex-1 p-6 sm:p-8 lg:px-10 space-y-6 sm:space-y-8 lg:space-y-10 overflow-y-auto overscroll-contain">
-                {items.map((item) => (
+                {items.map((item, index) => (
                   <CartItem
-                    key={item.id}
+                    key={`${item.id}-${item.color || "no-color"}-${
+                      item.size || "no-size"
+                    }-${index}`}
                     item={item}
                     onQuantityChange={handleQuantityChange}
                     onRemove={handleRemoveItem}
@@ -296,7 +311,14 @@ const CartItem = ({ item, onQuantityChange, onRemove, isLoading }) => {
         <div className="flex justify-between items-center">
           <div className="flex items-center border border-gray-200 rounded-full">
             <button
-              onClick={() => onQuantityChange(item.id, item.quantity - 1)}
+              onClick={() =>
+                onQuantityChange(
+                  item.id,
+                  item.quantity - 1,
+                  item.color,
+                  item.size
+                )
+              }
               disabled={isLoading || item.quantity <= 1}
               className="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center disabled:opacity-50 transition-opacity cursor-pointer"
               aria-label="Decrease quantity"
@@ -307,7 +329,14 @@ const CartItem = ({ item, onQuantityChange, onRemove, isLoading }) => {
               {item.quantity}
             </span>
             <button
-              onClick={() => onQuantityChange(item.id, item.quantity + 1)}
+              onClick={() =>
+                onQuantityChange(
+                  item.id,
+                  item.quantity + 1,
+                  item.color,
+                  item.size
+                )
+              }
               disabled={isLoading}
               className="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center disabled:opacity-50 transition-opacity cursor-pointer"
               aria-label="Increase quantity"
@@ -317,7 +346,7 @@ const CartItem = ({ item, onQuantityChange, onRemove, isLoading }) => {
           </div>
 
           <button
-            onClick={() => onRemove(item.id)}
+            onClick={() => onRemove(item.id, item.color, item.size)}
             disabled={isLoading}
             className="text-xs text-gray-600 hover:text-red-600 disabled:opacity-50 transition-colors cursor-pointer"
           >
