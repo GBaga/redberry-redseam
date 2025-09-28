@@ -1,38 +1,3 @@
-// "use client";
-
-// import Image from "next/image";
-// import Link from "next/link";
-
-// export default function ProductCard({ id, name, price, cover_image }) {
-//   return (
-//     <Link
-//       href={`/products/${id}`}
-//       className="flex flex-col items-start gap-3 w-[412px] h-[614px]"
-//     >
-//       {/* Image container */}
-//       <div className="w-full h-[549px] relative rounded-lg overflow-hidden">
-//         <Image
-//           src={cover_image || "/images/placeholder.png"}
-//           alt={name}
-//           fill
-//           className="object-cover"
-//           sizes="(max-width: 768px) 100vw, 412px"
-//         />
-//       </div>
-
-//       {/* Text content */}
-//       <div className="flex flex-col gap-0.5 w-full">
-//         <h3 className="text-[18px] font-medium leading-[18px] tracking-normal text-[#10151F]">
-//           {name}
-//         </h3>
-//         <p className="text-[16px] font-medium leading-[16px] tracking-normal text-[#10151F]">
-//           ${price}
-//         </p>
-//       </div>
-//     </Link>
-//   );
-// }
-
 "use client";
 
 import { useState, useCallback, memo } from "react";
@@ -77,7 +42,7 @@ const ProductCard = memo(function ProductCard({
   return (
     <Link
       href={`/products/${id}`}
-      className="group flex flex-col items-start gap-3 w-full max-w-[412px] h-[614px] cursor-pointer transition-transform duration-200 hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-[#FF4000] focus:ring-offset-2 rounded-lg"
+      className="group flex flex-col items-start gap-3 w-full max-w-[412px] h-[614px] cursor-pointer transition-transform duration-200 hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-[#FF4000] focus:ring-offset-2 rounded-xl"
       aria-label={`View ${name} - $${formattedPrice}`}
     >
       {/* Image container */}
@@ -102,13 +67,13 @@ const ProductCard = memo(function ProductCard({
           quality={85}
         />
 
-        {/* Hover overlay */}
-        <div className="absolute inset-0 bg-black opacity-0 group-hover:opacity-10 transition-opacity duration-200 pointer-events-none" />
+        {/* Always visible grey overlay */}
+        <div className="absolute inset-0 bg-black opacity-5 pointer-events-none" />
       </div>
 
       {/* Text content */}
       <div className="flex flex-col gap-0.5 w-full px-1">
-        <h3 className="text-[18px] font-medium leading-[18px] tracking-normal text-[#10151F] line-clamp-2 group-hover:text-[#FF4000] transition-colors duration-200">
+        <h3 className="text-[18px] font-medium leading-[18px] tracking-normal text-[#10151F] line-clamp-2 group-hover:text-[#FF4000] transition-colors duration-200 pt-3 pb-1">
           {name || "Untitled Product"}
         </h3>
         <p className="text-[16px] font-medium leading-[16px] tracking-normal text-[#10151F]">
