@@ -68,7 +68,7 @@ const ProductCard = memo(function ProductCard({
         />
 
         {/* Always visible grey overlay */}
-        <div className="absolute inset-0 bg-black opacity-5 pointer-events-none" />
+        <div className="absolute inset-0 bg-black opacity-3 pointer-events-none" />
       </div>
 
       {/* Text content */}

@@ -139,7 +139,8 @@ const CartSideBar = ({
     <div className="fixed inset-0 z-50">
       {/* Backdrop */}
       <div
-        className="absolute inset-0 bg-black/25 backdrop-blur-sm"
+        className="absolute inset-0 bg-black/25 opacity-60"
+        // className="absolute inset-0 bg-gray-400 opacity-45"
         onClick={onClose}
         aria-hidden="true"
       />

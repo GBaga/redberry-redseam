@@ -307,7 +307,7 @@ export default function ProductFilters({
 
         {/* Sort Dropdown Menu */}
         {state.showSortDropdown && (
-          <div className="absolute right-0 top-full mt-2 w-56 bg-white border border-gray-300 rounded-lg shadow-lg z-50 py-2 opacity-100 scale-100 transition-all duration-200">
+          <div className="absolute right-0 top-full mt-2 w-56 bg-white border border-gray-300 rounded-lg shadow-lg z-50 py-2">
             <button
               onClick={() => handleSortSelect("")}
               className={`w-full text-left px-4 py-2 hover:bg-gray-50 transition-colors cursor-pointer ${
@@ -371,7 +371,7 @@ const PriceFilterPopup = React.forwardRef(
   ) => (
     <div
       ref={ref}
-      className="fixed bg-white border border-gray-300 rounded-lg shadow-xl z-50 p-4 opacity-100 scale-100 transition-all duration-200"
+      className="fixed bg-white border border-gray-300 rounded-lg shadow-xl z-50 p-4"
       style={{
         top: `${position.top}px`,
         left: `${position.left}px`,

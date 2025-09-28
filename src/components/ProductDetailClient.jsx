@@ -184,9 +184,9 @@ export default function ProductDetailClient({ product, onAddToCart }) {
                 <button
                   key={`thumb-${index}`}
                   onClick={() => handleImageSelect(index)}
-                  className={`w-full aspect-[3/4] overflow-hidden rounded-md border-2 transition-all duration-200 cursor-pointer ${
+                  className={`w-full aspect-[3/4] overflow-hidden rounded-md  transition-all duration-200 cursor-pointer relative ${
                     selectedImageIndex === index
-                      ? "border-[#FF4000] shadow-lg"
+                      ? "border-[#FF4000] shadow-lg border-2"
                       : "border-[#E1DFE1] hover:border-gray-300"
                   }`}
                   aria-label={`View image ${index + 1}`}
@@ -199,6 +199,8 @@ export default function ProductDetailClient({ product, onAddToCart }) {
                     className="object-cover w-full h-full"
                     loading="lazy"
                   />
+                  {/* Add overlay */}
+                  <div className="absolute inset-0 bg-black opacity-3 pointer-events-none" />
                 </button>
               ))}
             </div>
@@ -212,9 +214,9 @@ export default function ProductDetailClient({ product, onAddToCart }) {
                 <button
                   key={`mobile-thumb-${index}`}
                   onClick={() => handleImageSelect(index)}
-                  className={`flex-shrink-0 w-20 h-24 overflow-hidden rounded-md border-2 transition-all duration-200 cursor-pointer ${
+                  className={`flex-shrink-0 w-20 h-24 overflow-hidden rounded-md  transition-all duration-200 cursor-pointer relative ${
                     selectedImageIndex === index
-                      ? "border-[#FF4000] shadow-md"
+                      ? "border-[#FF4000] shadow-md border-2"
                       : "border-[#E1DFE1]"
                   }`}
                 >
@@ -225,6 +227,8 @@ export default function ProductDetailClient({ product, onAddToCart }) {
                     height={96}
                     className="object-cover w-full h-full"
                   />
+                  {/* Add overlay */}
+                  <div className="absolute inset-0 bg-black opacity-3 pointer-events-none" />
                 </button>
               ))}
             </div>
@@ -244,6 +248,8 @@ export default function ProductDetailClient({ product, onAddToCart }) {
                 priority
                 onLoad={() => setIsImageLoading(false)}
               />
+              {/* Add overlay */}
+              <div className="absolute inset-0 bg-black opacity-3 pointer-events-none" />
             </div>
           </div>
 
@@ -321,7 +327,7 @@ export default function ProductDetailClient({ product, onAddToCart }) {
                 <select
                   value={quantity}
                   onChange={(e) => setQuantity(parseInt(e.target.value))}
-                  className="appearance-none w-full h-[42px] px-4 py-[9px] border border-[#E1DFE1] rounded-[10px] text-[#10151F] font-[Poppins] font-normal text-[16px] leading-[24px] opacity-80 bg-transparent focus:outline-none"
+                  className="appearance-none w-full h-[42px] px-4 py-[9px] border border-[#E1DFE1] rounded-[10px] text-[#10151F] font-[Poppins] font-normal text-[16px] leading-[24px] opacity-80 bg-transparent focus:outline-none cursor-pointer"
                   disabled={isAddingToCart}
                 >
                   {Array.from({ length: 10 }, (_, i) => i + 1).map((num) => (
